@@ -1,0 +1,8 @@
+{
+    "errNotAdmin": "Yönetici değilsin",
+    "errNotBotAdmin": "Bot yönetici değil",
+    "errGroupRestricted": "Bu komut sadece özelde çalışır",
+    "errPrivateRestricted": "Bu komut sadece gruplarda çalışır",
+    "errMinArgs": "Bu komut için en az {} argüman gerekir",
+    "errMaxArgs": "Bu komut için en fazla {} argüman gerekir"
+}

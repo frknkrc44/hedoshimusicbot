@@ -1,0 +1,7 @@
+__pycache__/
+*cache/
+.vscode/
+*.session*
+unknown_errors.txt
+example.*
+config.env
