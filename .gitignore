@@ -1,5 +1,6 @@
 __pycache__/
 *cache/
+downloads/
 .vscode/
 *.session*
 unknown_errors.txt

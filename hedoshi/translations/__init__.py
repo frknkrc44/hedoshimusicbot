@@ -5,6 +5,7 @@ from logging import info, warning
 from traceback import format_exc
 from typing import List, Optional
 
+
 class Translator:
     def __init__(
         self,
@@ -64,7 +65,7 @@ class Translator:
 
         if lang not in self.trans_cache.keys():
             return self._translate(
-                keyword=keyword, 
+                keyword=keyword,
                 lang=self.default_lang,
                 args=args,
                 default=default,

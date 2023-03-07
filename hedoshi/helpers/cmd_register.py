@@ -7,36 +7,41 @@ from pyrogram.enums.parse_mode import ParseMode
 from traceback import format_exc
 from logging import info
 
-locals()['botmain'] = __import__(__name__.split('.')[0], fromlist=['bot', 'bot_config', 'translator'])
+locals()['botmain'] = __import__(__name__.split('.')[
+    0], fromlist=['bot', 'bot_config', 'translator'])
 bot = locals()['botmain'].bot
 bot_config = locals()['botmain'].bot_config
 _ = locals()['botmain'].translator
 
-bot_owner = bot_config.BOT_OWNER # type: ignore
-prefixes = ['/', '\\', '|', '!','₺']
+bot_owner = bot_config.BOT_OWNER  # type: ignore
+prefixes = ['/', '\\', '|', '!', '₺']
+
 
 def is_owner(message: Message):
     return message.from_user.id == bot_owner
-    
+
+
 async def is_admin(message: Message):
     member = await message.chat.get_member(message.from_user.id)
     return member.promoted_by is not None
 
+
 async def is_bot_admin(chat: Chat):
-    member = await chat.get_member(bot.me.id) # type: ignore
+    member = await chat.get_member(bot.me.id)  # type: ignore
     return member.promoted_by is not None
 
+
 def register(
-        cmd: str | None,
-        admin: bool = False,
-        bot_admin: bool | None = None,
-        group: bool = True,
-        private: bool = True,
-        owner: bool = False,
-        notify_user: bool = True,
-        min_args: int = 0,
-        max_args: int = -1,
-    ):
+    cmd: str | None,
+    admin: bool = False,
+    bot_admin: bool | None = None,
+    group: bool = True,
+    private: bool = False,
+    owner: bool = False,
+    notify_user: bool = True,
+    min_args: int = 0,
+    max_args: int = -1,
+):
 
     if bot_admin is None:
         bot_admin = admin

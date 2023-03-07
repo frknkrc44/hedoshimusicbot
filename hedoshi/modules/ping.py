@@ -2,7 +2,8 @@ from pyrogram.types import Message
 from ..helpers.cmd_register import register
 from time import time
 
-@register('ping|check')
+
+@register('ping|check', private=True)
 async def ping(message: Message) -> None:
     start = time()
     msg = await message.reply_text('Pong!')

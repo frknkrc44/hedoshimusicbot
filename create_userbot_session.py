@@ -5,8 +5,9 @@ values = dotenv_values('config.env')
 
 userbot = Client(
     ':memory:',
-    api_id=values['API_ID'],
-    api_hash=values['API_HASH'],
+    api_id=values['API_ID'],  # type: ignore
+    api_hash=values['API_HASH'],  # type: ignore
+    in_memory=bool(values.get('CREATE_SESSION_MEMORY', False)),
 )
 
 with userbot:
