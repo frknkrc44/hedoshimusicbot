@@ -1,6 +1,6 @@
 from pyrogram.types import Message
 from ..helpers.telegram.cmd_register import register
-from ..helpers.telegram.downloader import download_and_start_tg_media, start_stream
+from ..helpers.telegram.downloader import download_and_start_tg_media, start_stream, parse_telegram_url, parse_telegram_url_and_stream
 from ..helpers.youtube import ytdl_wrapper as youtube
 from .. import translator as _
 
@@ -20,7 +20,9 @@ async def vplay(message: Message):
             return
     else:
         if len(message.command) > 1:
-            if youtube.is_valid(message.command[1]):
+            if parse_telegram_url(message.command[1])[0]:  # type: ignore
+                await parse_telegram_url_and_stream(msg, message.command[1], True)
+            elif youtube.is_valid(message.command[1]):
                 path = youtube.download_media(message.command[1], msg)
                 await start_stream(msg, path, True)
             else:

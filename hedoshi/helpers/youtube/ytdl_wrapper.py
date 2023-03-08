@@ -5,7 +5,6 @@ from os import getcwd
 from re import match
 from pyrogram.types import Message
 from ... import translator as _
-from ..telegram.downloader import progress_func
 
 yt_valid_ends = [
     '.m3u8'
@@ -23,14 +22,12 @@ class FilenameCollectorPP(PostProcessor):
         return [], information
 
 
-'''
 def _is_valid_ends(url: str):
     for item in yt_valid_ends:
-        if item in yt_valid_ends:
+        if item in url:
             return True
 
     return False
-'''
 
 
 def is_valid(url: str):
@@ -38,27 +35,17 @@ def is_valid(url: str):
         if hasattr(item, '_VALID_URL') and match(getattr(item, '_VALID_URL'), url):
             return True
 
-    return False
+    return _is_valid_ends(url)
 
 
 def download_media(url: str, reply: Message, audio: bool = False) -> str:
     globals()['last_percent'] = -1
     globals()['last_percent_epoch'] = 0
 
-    def _progress_hook(data):
-        current = data['downloaded_bytes']
-        total = data.get('total_bytes', current)
-        progressor = progress_func(reply, current, total)
-        try:
-            progressor.send(None)
-        except StopIteration:
-            progressor.close()
-
     opts = {
         'ignoreerrors': True,
         'outtmpl': f'{getcwd()}/downloads/%(id)s-{"audio" if audio else "video"}.%(ext)s',
         'cachedir': f'{getcwd()}/downloads',
-        'progress_hooks': [_progress_hook]
     }
 
     if audio:
