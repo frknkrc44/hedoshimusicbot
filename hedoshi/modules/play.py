@@ -21,7 +21,7 @@ async def play(message: Message):
     else:
         if len(message.command) > 1:
             if youtube.is_valid(message.command[1]):
-                path = youtube.download_media(message.command[1], True)
+                path = youtube.download_media(message.command[1], msg, True)
                 await start_stream(msg, path, False)
             else:
                 await msg.edit(_.translate_chat('streamNoSrc', cid=message.chat.id))

@@ -1,17 +1,11 @@
 from yt_dlp import YoutubeDL
 from yt_dlp.postprocessor.common import PostProcessor
+import yt_dlp.extractor.extractors as ex
 from os import getcwd
-from re import sub
+from re import match
 from pyrogram.types import Message
-from time import time
-from logging import info
 from ... import translator as _
-
-yt_host_names = [
-    'youtube.com',
-    'www.youtube.com',
-    'm.youtube.com'
-]
+from ..telegram.downloader import progress_func
 
 yt_valid_ends = [
     '.m3u8'
@@ -40,18 +34,31 @@ def _is_valid_ends(url: str):
 
 
 def is_valid(url: str):
-    url = sub('https?://', '', url)
-    return url.split('/', 1)[0] in yt_host_names  # or _is_valid_ends(url)
+    for item in ex._ALL_CLASSES:
+        if hasattr(item, '_VALID_URL') and match(getattr(item, '_VALID_URL'), url):
+            return True
+
+    return False
 
 
 def download_media(url: str, reply: Message, audio: bool = False) -> str:
     globals()['last_percent'] = -1
     globals()['last_percent_epoch'] = 0
 
+    def _progress_hook(data):
+        current = data['downloaded_bytes']
+        total = data.get('total_bytes', current)
+        progressor = progress_func(reply, current, total)
+        try:
+            progressor.send(None)
+        except StopIteration:
+            progressor.close()
+
     opts = {
         'ignoreerrors': True,
         'outtmpl': f'{getcwd()}/downloads/%(id)s-{"audio" if audio else "video"}.%(ext)s',
-        'cachedir': f'{getcwd()}/downloads'
+        'cachedir': f'{getcwd()}/downloads',
+        'progress_hooks': [_progress_hook]
     }
 
     if audio:
