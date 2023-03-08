@@ -1,6 +1,6 @@
 from pyrogram.types import Message
-from ..helpers.cmd_register import register
-from ..helpers.groups import find_active_userbot
+from ..helpers.telegram.cmd_register import register
+from ..helpers.telegram.groups import find_active_userbot
 
 
 @register(cmd='leave')

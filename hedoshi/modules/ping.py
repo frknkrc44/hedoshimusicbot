@@ -1,5 +1,5 @@
 from pyrogram.types import Message
-from ..helpers.cmd_register import register
+from ..helpers.telegram.cmd_register import register
 from time import time
 
 

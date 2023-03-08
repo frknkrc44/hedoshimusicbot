@@ -2,8 +2,8 @@ from pyrogram import Client
 from pyrogram.types import Message, User, Chat
 from pytgcalls import PyTgCalls
 from pytgcalls.types import InputStream
-from . import userbots
-from .. import bot
+from .. import userbots
+from ... import bot
 
 
 async def is_member_alive(chat: Chat, user: User) -> bool:

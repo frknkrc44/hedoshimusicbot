@@ -4,5 +4,13 @@
     "errGroupRestricted": "Bu komut sadece özelde çalışır",
     "errPrivateRestricted": "Bu komut sadece gruplarda çalışır",
     "errMinArgs": "Bu komut için en az {} argüman gerekir",
-    "errMaxArgs": "Bu komut için en fazla {} argüman gerekir"
+    "errMaxArgs": "Bu komut için en fazla {} argüman gerekir",
+    "mvProcessing": "İstek işleniyor...",
+    "mvDownloading": "İndiriliyor... %{}",
+    "streamStarted": "Akış başlatıldı!",
+    "streamEnd": "Akış bitti!",
+    "streamNoSrc": "Hiçbir kaynak belirtilmedi!",
+    "streamError": "Akış başlatılırken bir hata oluştu",
+    "streamTGError": "Telegram'dan dosya indirilirken bir hata oluştu",
+    "streamDLNoUserbot": "Aktif bir asistan bulunamadı, bot yardımıyla indirme deneniyor..."
 }

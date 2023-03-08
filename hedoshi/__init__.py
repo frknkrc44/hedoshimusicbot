@@ -8,13 +8,14 @@ from os import listdir
 from os.path import sep
 from traceback import format_exc
 from .helpers import userbots
+from .translations import Translator
 
 basicConfig(level=INFO)
 
 name = __name__
 bot_config = __import__(f'{__name__}.bot_config').bot_config
 max_userbots = int(getattr(bot_config, 'MAX_USERBOT_COUNT', 4))
-translator = __import__('hedoshi.translations').translations.Translator()
+translator = Translator()
 modules_dir = f"{__name__}/modules"
 
 bot = Client(
@@ -59,7 +60,11 @@ async def add_userbots():
                 except:
                     pass
 
-                await bot.send_message(update.chat_id, text='Stream end')
+                await bot.send_message(
+                    update.chat_id,
+                    text=translator.translate_chat(
+                        'streamEnd', cid=update.chat_id)
+                )
 
             calls.start()
             userbots.append(calls)

@@ -7,8 +7,10 @@ from pyrogram.enums.parse_mode import ParseMode
 from traceback import format_exc
 from logging import info
 
-locals()['botmain'] = __import__(__name__.split('.')[
-    0], fromlist=['bot', 'bot_config', 'translator'])
+locals()['botmain'] = __import__(
+    __name__.split('.')[0],
+    fromlist=['bot', 'bot_config', 'translator'],
+)
 bot = locals()['botmain'].bot
 bot_config = locals()['botmain'].bot_config
 _ = locals()['botmain'].translator
