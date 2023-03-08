@@ -1,6 +1,7 @@
 from pyrogram.types import Message
 from ..helpers.telegram.cmd_register import register
-from ..helpers.telegram.downloader import download_and_start_tg_media, start_stream, parse_telegram_url, parse_telegram_url_and_stream
+from ..helpers.telegram.downloader import (download_and_start_tg_media, start_stream,
+                                           parse_telegram_url, parse_telegram_url_and_stream)
 from ..helpers.youtube import ytdl_wrapper as youtube
 from .. import translator as _
 

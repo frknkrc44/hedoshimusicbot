@@ -22,7 +22,7 @@ async def play(message: Message):
     else:
         if len(message.command) > 1:
             if parse_telegram_url(message.command[1])[0]:  # type: ignore
-                await parse_telegram_url_and_stream(msg, message.command[1], True)
+                await parse_telegram_url_and_stream(msg, message.command[1], False)
             elif youtube.is_valid(message.command[1]):
                 path = youtube.download_media(message.command[1], msg, True)
                 await start_stream(msg, path, False)

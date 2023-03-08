@@ -9,6 +9,8 @@
     "mvDownloading": "İndiriliyor... %{}",
     "streamStarted": "Akış başlatıldı!",
     "streamEnd": "Akış bitti!",
+    "streamResumed": "Akış devam ettirildi!",
+    "streamPaused": "Akış duraklatıldı!",
     "streamNoSrc": "Hiçbir kaynak belirtilmedi!",
     "streamError": "Akış başlatılırken bir hata oluştu",
     "streamTGError": "Telegram'dan dosya indirilirken bir hata oluştu",
