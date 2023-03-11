@@ -21,8 +21,7 @@ async def lquery(message: Message):
             num = show_current_or_number(i)
             name = item.stream._path.split('/')[-1]
             name = name[:name.find('.')]
-            cdur = await get_current_duration(message)
-            current = f'{time_format(cdur)}/' if i == 0 else ''
+            current = f'{time_format(await get_current_duration(message))}/' if i == 0 else ''
             duration = _.translate_chat(
                 'queryDuration',
                 args=[f'{current}{time_format(item.duration)}'],
