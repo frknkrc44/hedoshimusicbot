@@ -6,7 +6,7 @@ from pytgcalls.types import AudioPiped, AudioVideoPiped, HighQualityAudio, HighQ
 from time import time
 from re import sub
 from .groups import find_active_userbot_client, join_or_change_stream, userbots, get_client
-from ... import bot, translator as _
+from ... import translator as _
 
 
 async def _progress_func_wrapper(reply: Message, current: int, total: int):
@@ -102,7 +102,7 @@ async def download_and_start_tg_media(
                 is_video=is_video,
             )
     else:
-        path = await bot.download_media(source, progress=progress_func)
+        path = await reply._client.download_media(source, progress=progress_func)
 
     await start_stream(reply, path, is_video)  # type: ignore
 

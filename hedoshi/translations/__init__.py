@@ -1,8 +1,7 @@
 from os import getcwd, listdir
 from os.path import isfile
 from json import loads
-from logging import info, warning
-from traceback import format_exc
+from logging import info
 from typing import List, Optional
 
 

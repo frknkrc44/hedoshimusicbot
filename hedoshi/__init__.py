@@ -31,12 +31,13 @@ bot = Client(
     bot_token=bot_config.BOT_TOKEN,  # type: ignore
 )
 
-for module in listdir(modules_dir):
+for module in sorted(listdir(modules_dir)):
     if module.endswith('.py') and module != '__init__.py':
         try:
+            module_name = module.replace('.py', '')
             __import__(
-                f"{modules_dir.replace(sep, '.')}.{module.replace('.py', '')}")
-            info(f'Module {module} imported!')
+                f"{modules_dir.replace(sep, '.')}.{module_name}")
+            info(f'Module {module_name} imported!')
         except:
             error(f'An error occurred while import module {module}!')
             error(format_exc())

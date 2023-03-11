@@ -61,4 +61,4 @@ def download_media(url: str, reply: Message, audio: bool = False) -> str:
         ytdl.add_post_processor(filename_collector)
         ytdl.download([url])
 
-    return filename_collector.filenames[-1]
+    return filename_collector.filenames[-1] if len(filename_collector.filenames) else None

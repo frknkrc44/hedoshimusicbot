@@ -1,4 +1,3 @@
-from datetime import timedelta
 from pyrogram.types import Message
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.groups import query, get_current_duration

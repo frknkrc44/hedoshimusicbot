@@ -12,12 +12,13 @@ async def play(message: Message):
 
     if message.reply_to_message:
         reply = message.reply_to_message
-        is_audio = reply.audio is not None or reply.voice is not None
+        is_audio = reply.audio is not None or reply.voice is not None or (
+            reply.document and 'audio' in reply.document.mime_type)
         is_video = reply.video is not None or (
-            reply.document and reply.document.mime_type.startswith('video'))
+            reply.document and 'video' in reply.document.mime_type)
 
-        await download_and_start_tg_media(msg, reply, is_video=False)
         if is_audio or is_video:
+            await download_and_start_tg_media(msg, reply, is_video=False)
             return
     else:
         if len(message.command) > 1:
@@ -25,7 +26,8 @@ async def play(message: Message):
                 await parse_telegram_url_and_stream(msg, message.command[1], False)
             elif youtube.is_valid(message.command[1]):
                 path = youtube.download_media(message.command[1], msg, True)
-                await start_stream(msg, path, False)
+                if path:
+                    await start_stream(msg, path, False)
             else:
                 await msg.edit(_.translate_chat('streamNoSrc', cid=message.chat.id))
             return

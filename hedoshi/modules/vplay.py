@@ -12,12 +12,13 @@ async def vplay(message: Message):
 
     if message.reply_to_message:
         reply = message.reply_to_message
-        is_audio = reply.audio is not None or reply.voice is not None
+        is_audio = reply.audio is not None or reply.voice is not None or (
+            reply.document and 'audio' in reply.document.mime_type)
         is_video = reply.video is not None or (
-            reply.document and reply.document.mime_type.startswith('video'))
+            reply.document and 'video' in reply.document.mime_type)
 
-        await download_and_start_tg_media(msg, reply, is_video=is_video)
         if is_audio or is_video:
+            await download_and_start_tg_media(msg, reply, is_video=is_video)
             return
     else:
         if len(message.command) > 1:
