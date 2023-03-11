@@ -9,10 +9,17 @@
     "mvDownloading": "İndiriliyor... %{}",
     "streamStarted": "Akış başlatıldı!",
     "streamEnd": "Akış bitti!",
+    "streamNext": "Sonrakine geçildi!",
     "streamResumed": "Akış devam ettirildi!",
     "streamPaused": "Akış duraklatıldı!",
+    "streamQueryAdded": "Akış için sıraya eklendi!",
+    "streamSeeking": "Akış ileri sarılıyor...",
+    "streamSeeked": "Akış ileri sarıldı!",
+    "streamBackSeeking": "Akış geri sarılıyor...",
+    "streamBackSeeked": "Akış geri sarıldı!",
     "streamNoSrc": "Hiçbir kaynak belirtilmedi!",
     "streamError": "Akış başlatılırken bir hata oluştu",
     "streamTGError": "Telegram'dan dosya indirilirken bir hata oluştu",
-    "streamDLNoUserbot": "Aktif bir asistan bulunamadı, bot yardımıyla indirme deneniyor..."
+    "streamDLNoUserbot": "Aktif bir asistan bulunamadı, bot yardımıyla indirme deneniyor...",
+    "queryEmpty": "Akış listesi boş"
 }

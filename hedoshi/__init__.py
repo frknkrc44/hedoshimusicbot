@@ -1,13 +1,13 @@
-from typing import List
 from pyrogram import Client
 from pytgcalls import PyTgCalls
-from pytgcalls.types import Update, StreamAudioEnded, StreamVideoEnded
+from pytgcalls.types import Update, StreamAudioEnded
 from logging import basicConfig, INFO, info, error
 from time import sleep
 from os import listdir
 from os.path import sep
 from traceback import format_exc
-from .helpers import userbots
+from .helpers.telegram.groups import join_or_change_stream
+from .helpers import userbots, get_next_query
 from .translations import Translator
 
 basicConfig(level=INFO)
@@ -53,6 +53,19 @@ async def add_userbots():
                 # if video stream ends, StreamAudioEnded and StreamVideoEnded is invoked
                 # so we can ignore the video stream end signal
                 if type(update) != StreamAudioEnded:
+                    return
+
+                get_next_query(update.chat_id, True)
+                item = get_next_query(update.chat_id)
+                if item:
+                    msg = await bot.send_message(
+                        update.chat_id,
+                        text=translator.translate_chat(
+                            'streamNext',
+                            cid=update.chat_id,
+                        )
+                    )
+                    await join_or_change_stream(msg, item.stream, 1)
                     return
 
                 try:

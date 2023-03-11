@@ -109,7 +109,7 @@ async def download_and_start_tg_media(
 
 async def start_stream(reply: Message, path: str, is_video: bool):
     if path:
-        await join_or_change_stream(
+        item = await join_or_change_stream(
             reply,
             AudioVideoPiped(
                 path,
@@ -120,7 +120,10 @@ async def start_stream(reply: Message, path: str, is_video: bool):
                 audio_parameters=HighQualityAudio(),
             ),
         )
-        await reply.edit(_.translate_chat('streamStarted', cid=reply.chat.id))
+        if item:
+            await reply.edit(_.translate_chat('streamQueryAdded', cid=reply.chat.id))
+        else:
+            await reply.edit(_.translate_chat('streamStarted', cid=reply.chat.id))
         return
     else:
         await reply.edit(_.translate_chat('streamTGError', cid=reply.chat.id))
