@@ -15,7 +15,7 @@ basicConfig(level=INFO)
 
 name = __name__
 bot_config = __import__(f'{__name__}.bot_config').bot_config
-max_userbots = int(getattr(bot_config, 'MAX_USERBOT_COUNT', 4))
+max_userbots = int(getattr(bot_config, 'MAX_ASSISTANT_COUNT', 4))
 translator = Translator()
 modules_dir = f"{__name__}/modules"
 
@@ -43,9 +43,9 @@ for module in sorted(listdir(modules_dir)):
             error(format_exc())
 
 
-async def add_userbots():
+async def add_assistants():
     for i in range(1, max_userbots + 1):
-        key = f'USERBOT_TOKEN{i}'
+        key = f'ASSISTANT_TOKEN{i}'
         if hasattr(bot_config, key) and getattr(bot_config, key):
             app = Client(
                 f'{name}_user{i}',
@@ -99,7 +99,7 @@ async def add_userbots():
         quit(1)
 
 # execute async function without asyncio
-routine = add_userbots()
+routine = add_assistants()
 try:
     routine.send(None)
 except StopIteration:

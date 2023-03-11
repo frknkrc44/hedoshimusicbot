@@ -1,0 +1,51 @@
+{
+    "addons": [],
+    "buildpacks": [],
+    "description": "A modular Telegram Music Bot using pytgcalls.",
+    "env": {
+        "API_HASH": {
+            "description": "Get this value from my.telegram.org.",
+            "required": true
+        },
+        "API_ID": {
+            "description": "Get this value from my.telegram.org.",
+            "required": true
+        },
+        "HEROKU_APPNAME": {
+            "description": "Add the Heroku app name here. Required for updates.",
+            "required": true
+        },
+        "HEROKU_KEY": {
+            "description": "Heroku API key, get it from 'https://dashboard.heroku.com/account. Required for updates.",
+            "required": true
+        },
+        "MAX_ASSISTANT_COUNT": {
+            "description": "Maximum assistant count for recognize ASSISTANT_TOKENn variables.",
+            "required": false,
+            "value": "4"
+        },
+        "ASSISTANT_TOKEN1": {
+            "description": "First assistant token. You can add more assistant accounts like ASSISTANT_TOKEN2, ASSISTANT_TOKEN3, ...",
+            "required": true
+        },
+        "BOT_OWNER": {
+            "description": "Bot owner's user id. PM is used to log errors for now.",
+            "required": true
+        }
+    },
+    "formation": {
+        "hedoshi": {
+            "quantity": 1,
+            "size": "eco"
+        }
+    },
+    "keywords": [
+        "telegram",
+        "music",
+        "module",
+        "pyrogram"
+    ],
+    "name": "Hedoshi Music Bot",
+    "repository": "https://gitlab.com/frknkrc44/hedoshimusicbot",
+    "stack": "container"
+}

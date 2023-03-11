@@ -23,7 +23,23 @@ def get_next_query(chat_id: int, delete: bool = False) -> Optional[QueryItem]:
     return query[first_index]
 
 
-def replace_query(old_item: QueryItem, new_item: QueryItem):
+def clear_query(chat_id: int) -> None:
+    if not len(query):
+        return
+
+    remove = []
+    for item in query:
+        if item.chat_id == chat_id:
+            remove.append(item)
+
+    if not len(remove):
+        return
+
+    for item in remove:
+        query.remove(item)
+
+
+def replace_query(old_item: QueryItem, new_item: QueryItem) -> None:
     idx = query.index(old_item)
     query.pop(idx)
     query.insert(idx, new_item)
