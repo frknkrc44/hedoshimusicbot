@@ -2,7 +2,7 @@ from typing import Optional
 from pyrogram import Client
 from pyrogram.types import Message, User, Chat
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped, AudioVideoPiped, GroupCall
+from pytgcalls.types import AudioPiped, AudioVideoPiped
 from ..ffmpeg.ffprobe import get_duration
 from .. import userbots, query
 from ..query_item import QueryItem
@@ -46,7 +46,7 @@ async def join_or_change_stream(
         query.append(item)
 
         try:
-            call: GroupCall = await calls.get_active_call(message.chat.id)
+            await calls.get_active_call(message.chat.id)
             return item
         except:
             pass
