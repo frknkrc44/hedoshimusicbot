@@ -1,4 +1,4 @@
-from os import getcwd, listdir
+from os import getcwd, listdir, sep
 from os.path import isfile
 from json import loads
 from logging import info
@@ -10,12 +10,12 @@ class Translator:
         self,
         sorter: bool = False
     ):
-        self.trans_folder = f'{getcwd()}/{__name__.replace(".", "/")}'
+        self.trans_folder = f'{getcwd()}{sep}{__name__.replace(".", sep)}'
 
         jsons = [
             file
             for file in listdir(self.trans_folder)
-            if isfile(f"{self.trans_folder}/{file}") and file[-5:] == ".json"
+            if isfile(f"{self.trans_folder}{sep}{file}") and file[-5:] == ".json"
         ]
 
         self.sorter_lang_keys = [i[:-5] for i in jsons]
@@ -26,7 +26,7 @@ class Translator:
 
             for file in jsons:
                 lang_key = file[:-5]
-                with open(f"{self.trans_folder}/{file}") as json:
+                with open(f"{self.trans_folder}{sep}{file}") as json:
                     try:
                         self.trans_cache[lang_key] = loads(json.read())
                         info(f"Loaded {lang_key}!")

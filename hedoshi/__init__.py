@@ -17,10 +17,10 @@ name = __name__
 bot_config = __import__(f'{__name__}.bot_config').bot_config
 max_userbots = int(getattr(bot_config, 'MAX_ASSISTANT_COUNT', 4))
 translator = Translator()
-modules_dir = f"{__name__}/modules"
+modules_dir = f"{__name__}{sep}modules"
 
 try:
-    rmtree(f'{getcwd()}/downloads', ignore_errors=True)
+    rmtree(f'{getcwd()}{sep}downloads', ignore_errors=True)
 except:
     pass
 

@@ -1,7 +1,7 @@
 from yt_dlp import YoutubeDL
 from yt_dlp.postprocessor.common import PostProcessor
 import yt_dlp.extractor.extractors as ex
-from os import getcwd
+from os import getcwd, sep
 from re import match
 from pyrogram.types import Message
 from ... import translator as _
@@ -47,8 +47,8 @@ def download_media(url: str, reply: Message, audio: bool = False) -> str:
 
     opts = {
         'ignoreerrors': True,
-        'outtmpl': f'{getcwd()}/downloads/%(uploader)s-%(title)s-{"a" if audio else "v"}.%(ext)s',
-        'cachedir': f'{getcwd()}/downloads',
+        'outtmpl': f'{getcwd()}{sep}downloads{sep}%(uploader)s-%(title)s-{"a" if audio else "v"}.%(ext)s',
+        'cachedir': f'{getcwd()}{sep}downloads',
     }
 
     if audio:
