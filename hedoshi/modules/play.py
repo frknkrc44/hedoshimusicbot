@@ -6,9 +6,10 @@ from ..helpers.youtube import ytdl_wrapper as youtube
 from .. import translator as _
 
 
-@register(cmd='play|oynat|baslat')
+@register(cmd='play|oynat|baslat|vplay|voynat|vbaslat')
 async def play(message: Message):
     msg = await message.reply_text(_.translate_chat('mvProcessing', cid=message.chat.id))
+    video_mode = message.command[0].startswith('v')
 
     if message.reply_to_message:
         reply = message.reply_to_message
@@ -18,16 +19,17 @@ async def play(message: Message):
             reply.document and 'video' in reply.document.mime_type)
 
         if is_audio or is_video:
-            await download_and_start_tg_media(msg, reply, is_video=False)
+            await download_and_start_tg_media(msg, reply, is_video=(video_mode and is_video))
             return
     else:
         if len(message.command) > 1:
             if parse_telegram_url(message.command[1])[0]:  # type: ignore
-                await parse_telegram_url_and_stream(msg, message.command[1], False)
+                await parse_telegram_url_and_stream(msg, message.command[1], video_mode)
             elif youtube.is_valid(message.command[1]):
-                path = youtube.download_media(message.command[1], msg, True)
+                path = youtube.download_media(
+                    message.command[1], msg, not video_mode)
                 if path:
-                    await start_stream(msg, path, False)
+                    await start_stream(msg, path, video_mode)
             else:
                 await msg.edit(_.translate_chat('streamNoSrc', cid=message.chat.id))
             return
