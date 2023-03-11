@@ -47,4 +47,4 @@ async def seekback(message: Message):
             stream=piped,
             action=1,
         )
-        await msg.edit(_.translate_chat('streambBackSeeked', cid=item.chat_id))
+        await msg.edit(_.translate_chat('streamBackSeeked', cid=item.chat_id))

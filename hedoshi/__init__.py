@@ -3,7 +3,8 @@ from pytgcalls import PyTgCalls
 from pytgcalls.types import Update, StreamAudioEnded
 from logging import basicConfig, INFO, info, error
 from time import sleep
-from os import listdir
+from os import listdir, getcwd
+from shutil import rmtree
 from os.path import sep
 from traceback import format_exc
 from .helpers.telegram.groups import join_or_change_stream
@@ -17,6 +18,11 @@ bot_config = __import__(f'{__name__}.bot_config').bot_config
 max_userbots = int(getattr(bot_config, 'MAX_USERBOT_COUNT', 4))
 translator = Translator()
 modules_dir = f"{__name__}/modules"
+
+try:
+    rmtree(f'{getcwd()}/downloads', ignore_errors=True)
+except:
+    pass
 
 bot = Client(
     name,

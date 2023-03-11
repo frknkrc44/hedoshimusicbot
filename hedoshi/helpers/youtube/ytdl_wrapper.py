@@ -32,8 +32,11 @@ def _is_valid_ends(url: str):
 
 def is_valid(url: str):
     for item in ex._ALL_CLASSES:
-        if hasattr(item, '_VALID_URL') and match(getattr(item, '_VALID_URL'), url):
-            return True
+        try:
+            if hasattr(item, '_VALID_URL') and match(getattr(item, '_VALID_URL'), url):
+                return True
+        except:
+            pass
 
     return _is_valid_ends(url)
 
@@ -44,12 +47,12 @@ def download_media(url: str, reply: Message, audio: bool = False) -> str:
 
     opts = {
         'ignoreerrors': True,
-        'outtmpl': f'{getcwd()}/downloads/%(id)s-{"audio" if audio else "video"}.%(ext)s',
+        'outtmpl': f'{getcwd()}/downloads/%(uploader)s-%(title)s-{"a" if audio else "v"}.%(ext)s',
         'cachedir': f'{getcwd()}/downloads',
     }
 
     if audio:
-        opts['format'] = 'm4a'  # bestaudio is very big!
+        opts['format'] = 'm4a' if 'youtube' in url else 'bestaudio/worstvideo'
     else:
         opts['format'] = 'bestvideo+bestaudio/best'
 

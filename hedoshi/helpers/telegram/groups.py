@@ -1,3 +1,4 @@
+from typing import Optional
 from pyrogram import Client
 from pyrogram.types import Message, User, Chat
 from pytgcalls import PyTgCalls
@@ -98,3 +99,18 @@ async def add_userbot(message: Message):
             return True
 
     return False
+
+
+async def get_current_duration(message: Message) -> Optional[int]:
+    calls = await find_active_userbot(message)
+    from .. import get_next_query
+    if calls:
+        query = get_next_query(message.chat.id)
+        if query:
+            try:
+                time = await calls.played_time(query.chat_id)
+                return query.skip + time
+            except:
+                pass
+
+    return None
