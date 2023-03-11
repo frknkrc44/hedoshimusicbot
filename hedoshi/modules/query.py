@@ -23,7 +23,11 @@ async def lquery(message: Message):
             name = name[:name.find('.')]
             cdur = await get_current_duration(message)
             current = f'{time_format(cdur)}/' if i == 0 else ''
-            duration = f'{current}{time_format(item.duration)}'
+            duration = _.translate_chat(
+                'queryDuration',
+                args=[f'{current}{time_format(item.duration)}'],
+                cid=item.chat_id,
+            )
             out = out + f'**{num}**\n{name}\n{duration}\n\n'
 
     await message.reply(out)
