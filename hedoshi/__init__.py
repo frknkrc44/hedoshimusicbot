@@ -19,10 +19,12 @@ max_userbots = int(getattr(bot_config, 'MAX_ASSISTANT_COUNT', 4))
 translator = Translator()
 modules_dir = f"{__name__}{sep}modules"
 
+'''
 try:
     rmtree(f'{getcwd()}{sep}downloads', ignore_errors=True)
 except:
     pass
+'''
 
 bot = Client(
     name,

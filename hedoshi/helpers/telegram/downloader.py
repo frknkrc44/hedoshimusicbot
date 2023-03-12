@@ -1,6 +1,8 @@
+from os import sep, getcwd, listdir
 from logging import info
-from typing import Tuple
+from typing import Optional, Tuple
 from pyrogram import Client
+from pyrogram.enums import MessageMediaType
 from pyrogram.types import Message
 from pytgcalls.types import AudioPiped, AudioVideoPiped, HighQualityAudio, HighQualityVideo
 from time import time
@@ -74,6 +76,23 @@ async def parse_telegram_url_and_stream(reply: Message, url: str, is_video: bool
         _.translate_chat('streamTGError', cid=reply.chat.id))  # type: ignore
 
 
+def get_downloaded_file_name(source: Message) -> Optional[str]:
+    download_dir = f'{getcwd()}{sep}downloads'
+
+    match source.media:
+        case MessageMediaType.AUDIO:
+            if source.audio.file_name in listdir(download_dir):
+                return f'{download_dir}{sep}{source.audio.file_name}'
+        case MessageMediaType.DOCUMENT:
+            if source.document.file_name in listdir(download_dir):
+                return f'{download_dir}{sep}{source.document.file_name}'
+        case MessageMediaType.VIDEO:
+            if source.video.file_name in listdir(download_dir):
+                return f'{download_dir}{sep}{source.video.file_name}'
+
+    return None
+
+
 async def download_and_start_tg_media(
     reply: Message,
     source: Message,
@@ -92,7 +111,8 @@ async def download_and_start_tg_media(
             userbot = await find_active_userbot_client(reply)
 
         if userbot:
-            path = await userbot.download_media(source, progress=progress_func)
+            path = get_downloaded_file_name(source) or (
+                await userbot.download_media(source, progress=progress_func))
         else:
             await reply.edit(_.translate_chat('streamDLNoUserbot', cid=reply.chat.id))
             return await download_and_start_tg_media(
@@ -102,7 +122,8 @@ async def download_and_start_tg_media(
                 is_video=is_video,
             )
     else:
-        path = await reply._client.download_media(source, progress=progress_func)
+        path = get_downloaded_file_name(source) or (
+            await reply._client.download_media(source, progress=progress_func))
 
     await start_stream(reply, path, is_video)  # type: ignore
 
