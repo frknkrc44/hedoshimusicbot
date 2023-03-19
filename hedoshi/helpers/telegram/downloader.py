@@ -8,6 +8,7 @@ from pytgcalls.types import AudioPiped, AudioVideoPiped, HighQualityAudio, HighQ
 from time import time
 from re import sub
 from .groups import find_active_userbot_client, join_or_change_stream, userbots, get_client
+from ..query import get_next_query
 from ... import translator as _
 
 

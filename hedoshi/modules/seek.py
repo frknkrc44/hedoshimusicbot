@@ -54,7 +54,7 @@ async def seek(message: Message):
             )
 
         replace_query(item, QueryItem(
-            piped, item.duration, skip, item.chat_id))
+            piped, item.duration, skip, item.chat_id, item.loop))
         await join_or_change_stream(
             message=msg,
             stream=piped,

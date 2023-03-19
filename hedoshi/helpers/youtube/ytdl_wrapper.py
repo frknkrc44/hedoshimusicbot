@@ -31,6 +31,9 @@ def _is_valid_ends(url: str):
 
 
 def is_valid(url: str):
+    if not url.startswith('http'):
+        return False
+
     for item in ex._ALL_CLASSES:
         try:
             if hasattr(item, '_VALID_URL') and match(getattr(item, '_VALID_URL'), url):

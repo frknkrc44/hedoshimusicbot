@@ -1,6 +1,6 @@
 from pyrogram import Client
 from pytgcalls import PyTgCalls
-from pytgcalls.types import Update, StreamAudioEnded
+from pytgcalls.types import Update, StreamAudioEnded, AudioPiped, AudioVideoPiped, HighQualityAudio, HighQualityVideo
 from logging import basicConfig, INFO, info, error
 from time import sleep
 from os import listdir, getcwd
@@ -8,7 +8,7 @@ from shutil import rmtree
 from os.path import sep
 from traceback import format_exc
 from .helpers.telegram.groups import join_or_change_stream
-from .helpers import userbots, get_next_query
+from .helpers import userbots, get_next_query, query
 from .translations import Translator
 
 basicConfig(level=INFO)
@@ -64,13 +64,31 @@ async def add_assistants():
                 if type(update) != StreamAudioEnded:
                     return
 
-                get_next_query(update.chat_id, True)
+                item = get_next_query(update.chat_id, True)
+                print(item)
+                if item and item.loop:
+                    if type(item.stream) == AudioPiped:
+                        piped = AudioPiped(
+                            path=item.stream._path,
+                            audio_parameters=HighQualityAudio(),
+                        )
+                    else:
+                        piped = AudioVideoPiped(
+                            path=item.stream._path,
+                            audio_parameters=HighQualityAudio(),
+                            video_parameters=HighQualityVideo(),
+                        )
+
+                    item.stream = piped
+                    item.skip = 0
+                    query.insert(0, item)
+
                 item = get_next_query(update.chat_id)
                 if item:
                     msg = await bot.send_message(
                         update.chat_id,
                         text=translator.translate_chat(
-                            'streamNext',
+                            'streamNext' if not item.loop else 'streamLoop',
                             cid=update.chat_id,
                         )
                     )

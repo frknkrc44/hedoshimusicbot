@@ -2,7 +2,7 @@ from pyrogram.types import Message
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.downloader import (download_and_start_tg_media, start_stream,
                                            parse_telegram_url, parse_telegram_url_and_stream)
-from ..helpers.youtube import ytdl_wrapper as youtube
+from ..helpers.youtube import ytdl_wrapper as youtube, yt_search
 from .. import translator as _
 
 
@@ -23,15 +23,22 @@ async def play(message: Message):
             return
     else:
         if len(message.command) > 1:
-            if parse_telegram_url(message.command[1])[0]:  # type: ignore
-                await parse_telegram_url_and_stream(msg, message.command[1], video_mode)
-            elif youtube.is_valid(message.command[1]):
+            command = ' '.join(message.command[1:])
+            if parse_telegram_url(command)[0]:  # type: ignore
+                return await parse_telegram_url_and_stream(msg, command, video_mode)
+            elif youtube.is_valid(command):
                 path = youtube.download_media(
-                    message.command[1], msg, not video_mode)
+                    command, msg, not video_mode)
                 if path:
                     await start_stream(msg, path, video_mode)
+                    return
             else:
-                await msg.edit(_.translate_chat('streamNoSrc', cid=message.chat.id))
-            return
+                if search := yt_search.search_query(command):
+                    if youtube.is_valid(search):  # type: ignore
+                        path = youtube.download_media(
+                            search, msg, not video_mode)  # type: ignore
+                        if path:
+                            await start_stream(msg, path, video_mode)
+                            return
 
     await msg.edit(_.translate_chat('streamNoSrc', cid=message.chat.id))
