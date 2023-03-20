@@ -2,9 +2,9 @@ from typing import Optional
 from pyrogram import Client
 from pyrogram.types import Message, User, Chat
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped, AudioVideoPiped
+from pytgcalls.types import AudioPiped, AudioVideoPiped, HighQualityAudio, HighQualityVideo, StreamAudioEnded, Update
 from ..ffmpeg.ffprobe import get_duration
-from .. import userbots, query
+from .. import userbots, query, get_next_query
 from ..query_item import QueryItem
 
 async def is_member_alive(chat: Chat, user: User) -> bool:
@@ -114,3 +114,54 @@ async def get_current_duration(message: Message) -> Optional[int]:
                 pass
 
     return None
+
+
+async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False):
+    from ... import bot, translator
+
+    # if video stream ends, StreamAudioEnded and StreamVideoEnded is invoked
+    # so we can ignore the video stream end signal
+    if type(update) != StreamAudioEnded:
+        return
+
+    item = get_next_query(update.chat_id, True)
+    print(item)
+    if item and item.loop and not force_skip:
+        if type(item.stream) == AudioPiped:
+            piped = AudioPiped(
+                path=item.stream._path,
+                audio_parameters=HighQualityAudio(),
+            )
+        else:
+            piped = AudioVideoPiped(
+                path=item.stream._path,
+                audio_parameters=HighQualityAudio(),
+                video_parameters=HighQualityVideo(),
+            )
+
+        item.stream = piped
+        item.skip = 0
+        query.insert(0, item)
+
+    item = get_next_query(update.chat_id)
+    if item:
+        msg = await bot.send_message(
+            update.chat_id,
+            text=translator.translate_chat(
+                'streamNext' if not item.loop else 'streamLoop',
+                cid=update.chat_id,
+            )
+        )
+        await join_or_change_stream(msg, item.stream, 1)
+        return
+
+    try:
+        await client.leave_group_call(update.chat_id)
+    except:
+        pass
+
+    await bot.send_message(
+        update.chat_id,
+        text=translator.translate_chat(
+            'streamEnd', cid=update.chat_id)
+    )

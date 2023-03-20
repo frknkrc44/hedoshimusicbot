@@ -1,14 +1,13 @@
 from pyrogram import Client
 from pytgcalls import PyTgCalls
-from pytgcalls.types import Update, StreamAudioEnded, AudioPiped, AudioVideoPiped, HighQualityAudio, HighQualityVideo
+from pytgcalls.types import Update
 from logging import basicConfig, INFO, info, error
 from time import sleep
-from os import listdir, getcwd
-from shutil import rmtree
+from os import listdir
 from os.path import sep
 from traceback import format_exc
-from .helpers.telegram.groups import join_or_change_stream
-from .helpers import userbots, get_next_query, query
+from .helpers import userbots
+from .helpers.telegram.groups import stream_end
 from .translations import Translator
 
 basicConfig(level=INFO)
@@ -58,53 +57,8 @@ async def add_assistants():
             calls = PyTgCalls(app)
 
             @calls.on_stream_end()
-            async def stream_end(client: PyTgCalls, update: Update):
-                # if video stream ends, StreamAudioEnded and StreamVideoEnded is invoked
-                # so we can ignore the video stream end signal
-                if type(update) != StreamAudioEnded:
-                    return
-
-                item = get_next_query(update.chat_id, True)
-                print(item)
-                if item and item.loop:
-                    if type(item.stream) == AudioPiped:
-                        piped = AudioPiped(
-                            path=item.stream._path,
-                            audio_parameters=HighQualityAudio(),
-                        )
-                    else:
-                        piped = AudioVideoPiped(
-                            path=item.stream._path,
-                            audio_parameters=HighQualityAudio(),
-                            video_parameters=HighQualityVideo(),
-                        )
-
-                    item.stream = piped
-                    item.skip = 0
-                    query.insert(0, item)
-
-                item = get_next_query(update.chat_id)
-                if item:
-                    msg = await bot.send_message(
-                        update.chat_id,
-                        text=translator.translate_chat(
-                            'streamNext' if not item.loop else 'streamLoop',
-                            cid=update.chat_id,
-                        )
-                    )
-                    await join_or_change_stream(msg, item.stream, 1)
-                    return
-
-                try:
-                    await client.leave_group_call(update.chat_id)
-                except:
-                    pass
-
-                await bot.send_message(
-                    update.chat_id,
-                    text=translator.translate_chat(
-                        'streamEnd', cid=update.chat_id)
-                )
+            async def stream_end_wrapper(client: PyTgCalls, update: Update):
+                await stream_end(client, update)
 
             calls.start()
             userbots.append(calls)

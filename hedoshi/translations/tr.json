@@ -24,5 +24,8 @@
     "queryEmpty": "Akış listesi boş",
     "queryCurrent": "Şu anda oynatılan",
     "queryNum": "{}. sırada",
-    "queryDuration": "Süre: {}"
+    "queryDuration": "Süre: {}",
+    "loopOn": "Şu anda oynatılan içerik tekrarlanacak",
+    "loopOff": "Şu anda oynatılan içerik tekrarlanmayacak",
+    "streamLoop": "Akış tekrarlanıyor"
 }
