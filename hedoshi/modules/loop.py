@@ -4,7 +4,7 @@ from pyrogram.types import Message
 from .. import translator as _
 
 
-@register(cmd='loop')
+@register(cmd='loop|dongu|döngü')
 async def set_loop(message: Message):
     item = get_next_query(message.chat.id)
     if not item:

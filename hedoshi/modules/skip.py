@@ -5,7 +5,7 @@ from ..helpers.telegram.groups import find_active_userbot, stream_end
 from .. import translator as _
 
 
-@register(cmd='skip|sonraki')
+@register(cmd='skip|next|sonraki')
 async def skip(message: Message):
     userbot = await find_active_userbot(message)
     if userbot:
@@ -13,4 +13,6 @@ async def skip(message: Message):
             await userbot.get_active_call(message.chat.id)
             await stream_end(userbot, update=StreamAudioEnded(message.chat.id), force_skip=True)
         except:
-            await message.reply(_.translate_chat('queryEmpty', cid=message.chat.id))
+            pass
+
+    await message.reply(_.translate_chat('queryEmpty', cid=message.chat.id))

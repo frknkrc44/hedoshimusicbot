@@ -3,7 +3,7 @@ from ..helpers.telegram.cmd_register import register
 from time import time
 
 
-@register('ping|check', private=True)
+@register('ping|check|denetle', private=True)
 async def ping(message: Message) -> None:
     start = time()
     msg = await message.reply_text('Pong!')

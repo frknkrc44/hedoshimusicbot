@@ -6,15 +6,17 @@ from ..helpers.telegram.groups import find_active_userbot, join_or_change_stream
 from .. import translator as _
 
 
-@register(cmd='seek|atla|seekback|geriatla')
+@register(cmd='seek|ileriatla')
 async def seek(message: Message):
-    back_mode = False
+    await _seek(message, False)
 
-    for i in ['back', 'geri']:
-        if i in message.command[0]:
-            back_mode = True
-            break
 
+@register(cmd='seekback|geriatla')
+async def sback(message: Message):
+    await _seek(message, True)
+
+
+async def _seek(message: Message, back_mode: bool):
     userbot = await find_active_userbot(message)
     if userbot:
         try:
@@ -43,14 +45,14 @@ async def seek(message: Message):
             piped = AudioPiped(
                 path=item.stream._path,
                 audio_parameters=HighQualityAudio(),
-                additional_ffmpeg_parameters=f'-ss {skip}'
+                additional_ffmpeg_parameters=f'-ss {skip}' if skip > 0 else ''
             )
         else:
             piped = AudioVideoPiped(
                 path=item.stream._path,
                 audio_parameters=HighQualityAudio(),
                 video_parameters=HighQualityVideo(),
-                additional_ffmpeg_parameters=f'-ss {skip}'
+                additional_ffmpeg_parameters=f'-ss {skip}' if skip > 0 else ''
             )
 
         replace_query(item, QueryItem(
