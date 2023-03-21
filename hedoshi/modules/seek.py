@@ -45,14 +45,14 @@ async def _seek(message: Message, back_mode: bool):
             piped = AudioPiped(
                 path=item.stream._path,
                 audio_parameters=HighQualityAudio(),
-                additional_ffmpeg_parameters=f'-ss {skip}' if skip > 0 else ''
+                additional_ffmpeg_parameters=f'-ss {skip}'
             )
         else:
             piped = AudioVideoPiped(
                 path=item.stream._path,
                 audio_parameters=HighQualityAudio(),
                 video_parameters=HighQualityVideo(),
-                additional_ffmpeg_parameters=f'-ss {skip}' if skip > 0 else ''
+                additional_ffmpeg_parameters=f'-ss {skip}'
             )
 
         replace_query(item, QueryItem(

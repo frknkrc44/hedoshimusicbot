@@ -27,5 +27,8 @@
     "queryDuration": "Süre: {}",
     "loopOn": "Şu anda oynatılan içerik tekrarlanacak",
     "loopOff": "Şu anda oynatılan içerik tekrarlanmayacak",
-    "streamLoop": "Akış tekrarlanıyor"
+    "streamLoop": "Akış tekrarlanıyor",
+    "astJoining": "Asistan gruba giriş yapıyor...",
+    "astJoinFail": "Asistan gruba giremedi!",
+    "astDurationFail": "Süre getirme başarısız oldu"
 }

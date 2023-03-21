@@ -8,11 +8,10 @@ from pytgcalls.types import AudioPiped, AudioVideoPiped, HighQualityAudio, HighQ
 from time import time
 from re import sub
 from .groups import find_active_userbot_client, join_or_change_stream, userbots, get_client
-from ..query import get_next_query
 from ... import translator as _
 
 
-async def _progress_func_wrapper(reply: Message, current: int, total: int):
+async def _progress_func_wrapper(reply: Message, current: int, total: int) -> None:
     percent = int((current / total) * 100)
     last_percent = globals()['last_percent']
     last_epoch: int = globals()['last_percent_epoch']
@@ -27,7 +26,7 @@ async def _progress_func_wrapper(reply: Message, current: int, total: int):
             pass
 
 
-def parse_telegram_url(url: str) -> Tuple[str | int | None] | None:
+def parse_telegram_url(url: str) -> Optional[Tuple[str | int | None]]:
     valid_telegram_domains = [
         't.me', 'telegram.org', 'telegram.dog'
     ]
@@ -48,7 +47,7 @@ def parse_telegram_url(url: str) -> Tuple[str | int | None] | None:
     return (chat_id, msg_id)  # type: ignore
 
 
-async def parse_telegram_url_and_stream(reply: Message, url: str, is_video: bool):
+async def parse_telegram_url_and_stream(reply: Message, url: str, is_video: bool) -> None:
     cid, mid = parse_telegram_url(url)  # type: ignore
     print(cid, mid)
 
@@ -100,7 +99,7 @@ async def download_and_start_tg_media(
     use_userbot: bool = False,
     userbot: Client | None = None,
     is_video: bool = False,
-):
+) -> None:
     globals()['last_percent'] = -1
     globals()['last_percent_epoch'] = 0
 
@@ -129,7 +128,7 @@ async def download_and_start_tg_media(
     await start_stream(reply, path, is_video)  # type: ignore
 
 
-async def start_stream(reply: Message, path: str, is_video: bool):
+async def start_stream(reply: Message, path: str, is_video: bool) -> None:
     if path:
         item = await join_or_change_stream(
             reply,

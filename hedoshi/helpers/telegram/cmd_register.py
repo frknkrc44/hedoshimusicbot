@@ -6,21 +6,12 @@ from pyrogram.enums import ChatType
 from pyrogram.enums.parse_mode import ParseMode
 from traceback import format_exc
 from logging import info
-
-locals()['botmain'] = __import__(
-    __name__.split('.')[0],
-    fromlist=['bot', 'bot_config', 'translator'],
-)
-bot = locals()['botmain'].bot
-bot_config = locals()['botmain'].bot_config
-_ = locals()['botmain'].translator
-
-bot_owner = bot_config.BOT_OWNER  # type: ignore
-prefixes = ['/', '\\', '|', '!', '₺']
+from typing import Optional
 
 
 def is_owner(message: Message):
-    return message.from_user.id == bot_owner
+    from ... import bot_config
+    return message.from_user.id == bot_config.BOT_OWNER
 
 
 async def is_admin(message: Message):
@@ -34,9 +25,9 @@ async def is_bot_admin(chat: Chat):
 
 
 def register(
-    cmd: str | None,
+    cmd: Optional[str],
     admin: bool = False,
-    bot_admin: bool | None = None,
+    bot_admin: Optional[bool] = None,
     group: bool = True,
     private: bool = False,
     owner: bool = False,
@@ -44,6 +35,9 @@ def register(
     min_args: int = 0,
     max_args: int = -1,
 ):
+    from ... import bot, bot_config, translator as _
+    bot_owner = bot_config.BOT_OWNER
+    prefixes = ['/', '\\', '|', '!', '₺']
 
     if bot_admin is None:
         bot_admin = admin

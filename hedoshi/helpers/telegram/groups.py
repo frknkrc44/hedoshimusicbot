@@ -19,10 +19,15 @@ async def join_or_change_stream(
     message: Message,
     stream: AudioPiped | AudioVideoPiped,
     action: int = 0,
-):
+) -> Optional[QueryItem]:
+    from ... import translator as _
+
+    def tr(key: str) -> str:
+        return _.translate_chat(key, cid=message.chat.id)
+
     calls = await find_active_userbot(message)
     if not calls:
-        locals()['msg'] = await message.reply('Assistant joining...')
+        locals()['msg'] = await message.reply(tr('astJoining'))
         try:
             await add_userbot(message)
             calls = await find_active_userbot(message)
@@ -30,17 +35,17 @@ async def join_or_change_stream(
             pass
 
     if not calls:
-        await locals()['msg'].edit('Failed to join assistant!')
-        return
+        await locals()['msg'].edit(tr('astJoinFail'))
+        return None
 
     if action == 0:
         seconds = await get_duration(stream._path)
         if not seconds:
             if 'msg' not in locals():
-                await message.reply('Failed to get duration!')
+                await message.reply(tr('astDurationFail'))
             else:
-                await locals()['msg'].edit('Failed to get duration!')
-            return
+                await locals()['msg'].edit(tr('astDurationFail'))
+            return None
 
         item = QueryItem(stream, seconds, 0, message.chat.id)
         query.append(item)
@@ -62,9 +67,11 @@ async def join_or_change_stream(
             message.chat.id,
             stream,
         )
+    
+    return None
 
 
-async def find_active_userbot(message: Message) -> PyTgCalls | None:
+async def find_active_userbot(message: Message) -> Optional[PyTgCalls]:
     for calls in userbots:
         pyrogram: Client = get_client(calls)
         try:
@@ -81,7 +88,7 @@ def get_client(calls: PyTgCalls) -> Client:
     return calls._app._bind_client._app
 
 
-async def find_active_userbot_client(message: Message) -> Client | None:
+async def find_active_userbot_client(message: Message) -> Optional[Client]:
     userbot = await find_active_userbot(message)
     if userbot:
         return get_client(userbot)
@@ -89,7 +96,7 @@ async def find_active_userbot_client(message: Message) -> Client | None:
     return None
 
 
-async def add_userbot(message: Message):
+async def add_userbot(message: Message) -> bool:
     from ... import bot
 
     for calls in userbots:
@@ -116,7 +123,7 @@ async def get_current_duration(message: Message) -> Optional[int]:
     return None
 
 
-async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False):
+async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False) -> None:
     from ... import bot, translator
 
     # if video stream ends, StreamAudioEnded and StreamVideoEnded is invoked
@@ -148,7 +155,7 @@ async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False
         msg = await bot.send_message(
             update.chat_id,
             text=translator.translate_chat(
-                'streamNext' if not item.loop else 'streamLoop',
+                'streamLoop' if item.loop and not force_skip else 'streamNext',
                 cid=update.chat_id,
             )
         )

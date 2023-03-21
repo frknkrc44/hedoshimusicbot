@@ -12,6 +12,7 @@ async def skip(message: Message):
         try:
             await userbot.get_active_call(message.chat.id)
             await stream_end(userbot, update=StreamAudioEnded(message.chat.id), force_skip=True)
+            return
         except:
             pass
 
