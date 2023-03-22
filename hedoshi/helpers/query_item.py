@@ -29,9 +29,10 @@ class QueryItem:
         })
 
     def query_details(self, current_duration: Optional[int] = None):
-        name = self.stream._path.split(sep)[-1]
+        name = self.stream._path.split(sep)[-1].split('.', 1)[0]
+        duration = time_format(self.duration)
+
         if current_duration:
-            duration = f'{time_format(current_duration)}/{self.duration}'
-        else:
-            duration = time_format(self.duration)
+            duration = f'{time_format(current_duration)}/' + duration
+
         return f'{name}\n{duration}'
