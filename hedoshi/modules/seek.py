@@ -16,6 +16,12 @@ async def sback(message: Message):
     await _seek(message, True)
 
 
+@register(cmd='seekstart|basaatla')
+async def fback(message: Message):
+    message.command.insert(1, '99999999')
+    await _seek(message, True)
+
+
 async def _seek(message: Message, back_mode: bool):
     userbot = await find_active_userbot(message)
     if userbot:
