@@ -57,16 +57,23 @@ async def join_or_change_stream(
             pass
 
     try:
-        await calls.get_call(message.chat.id)
-        await calls.change_stream(
-            message.chat.id,
-            stream,
-        )
-    except:
-        await calls.join_group_call(
-            message.chat.id,
-            stream,
-        )
+        try:
+            await calls.get_call(message.chat.id)
+            await calls.change_stream(
+                message.chat.id,
+                stream,
+            )
+        except:
+            await calls.join_group_call(
+                message.chat.id,
+                stream,
+            )
+    except BaseException as e:
+        if 'msg' not in locals():
+            await message.reply(tr('astPlayFail'))
+        else:
+            await locals()['msg'].edit(tr('astPlayFail'))
+        raise e
     
     return None
 

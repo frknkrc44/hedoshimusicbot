@@ -31,5 +31,6 @@
     "streamLoop": "Akış tekrarlanıyor",
     "astJoining": "Asistan gruba giriş yapıyor...",
     "astJoinFail": "Asistan gruba giremedi!",
-    "astDurationFail": "Süre getirme başarısız oldu"
+    "astDurationFail": "Süre getirme başarısız oldu",
+    "astPlayFail": "Asistanın oynatma girişimi başarısız oldu. Sesli sohbetin etkin olduğuna emin olun ve tekrar deneyin."
 }
