@@ -54,7 +54,7 @@ async def parse_telegram_url_and_stream(reply: Message, url: str, is_video: bool
         return
 
     if topic_id:
-        await reply.edit(_.translate_chat('errNoTopicSupport'))
+        await reply.edit(_.translate_chat('errNoTopicSupport', cid=reply.chat.id))
         return
 
     for item in userbots:
