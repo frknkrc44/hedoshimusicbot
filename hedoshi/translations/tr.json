@@ -3,6 +3,7 @@
     "errNotBotAdmin": "Bot yönetici değil",
     "errGroupRestricted": "Bu komut sadece özelde çalışır",
     "errPrivateRestricted": "Bu komut sadece gruplarda çalışır",
+    "errNoTopicSupport": "Bu bot henüz konuları desteklemiyor",
     "errMinArgs": "Bu komut için en az {} argüman gerekir",
     "errMaxArgs": "Bu komut için en fazla {} argüman gerekir",
     "mvProcessing": "İstek işleniyor...",

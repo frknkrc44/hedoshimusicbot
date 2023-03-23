@@ -1,5 +1,4 @@
 from os import sep, getcwd, listdir
-from logging import info
 from typing import Optional, Tuple
 from pyrogram import Client
 from pyrogram.enums import MessageMediaType
@@ -16,7 +15,6 @@ async def _progress_func_wrapper(reply: Message, current: int, total: int) -> No
     last_percent = globals()['last_percent']
     last_epoch: int = globals()['last_percent_epoch']
     current_epoch = int(time())
-    info(f'{last_epoch} - {current_epoch} - {last_epoch - current_epoch}')
     if percent > last_percent and (current_epoch - last_epoch) > 3:
         globals()['last_percent'] = percent
         globals()['last_percent_epoch'] = current_epoch
@@ -35,7 +33,7 @@ def parse_telegram_url(url: str) -> Optional[Tuple[str | int | None]]:
     splitter = new_url.split('/')
 
     if not splitter[0] in valid_telegram_domains:
-        return (None, None)  # type: ignore
+        return (None, None, None)  # type: ignore
 
     increaser = 1 if 's' in splitter or 'c' in splitter else 0
     try:
@@ -43,23 +41,29 @@ def parse_telegram_url(url: str) -> Optional[Tuple[str | int | None]]:
     except:
         chat_id = splitter[1 + increaser]  # type: ignore
 
-    msg_id = int(splitter[2 + increaser])
-    return (chat_id, msg_id)  # type: ignore
+    msg_id = int(splitter[-1])
+    topic_id = int(splitter[-2]) if len(splitter) > (increaser + 3) else None
+
+    return (chat_id, msg_id, topic_id)  # type: ignore
 
 
 async def parse_telegram_url_and_stream(reply: Message, url: str, is_video: bool) -> None:
-    cid, mid = parse_telegram_url(url)  # type: ignore
-    print(cid, mid)
+    chat_id, message_id, topic_id = parse_telegram_url(url)  # type: ignore
 
-    if not cid or not mid:
+    if not chat_id or not message_id:
+        return
+
+    if topic_id:
+        await reply.edit(_.translate_chat('errNoTopicSupport'))
         return
 
     for item in userbots:
         client: Client = get_client(item)
+
         try:
             msg = await client.get_messages(
-                chat_id=cid,
-                message_ids=mid,
+                chat_id=chat_id,
+                message_ids=message_id,
             )
             await download_and_start_tg_media(
                 reply=reply,
