@@ -1,0 +1,5 @@
+build: 
+  docker: 
+      hedoshi: Dockerfile
+run:
+   hedoshi: python3 -m hedoshi
