@@ -31,6 +31,10 @@
         "BOT_OWNER": {
             "description": "Bot owner's user id. PM is used to log errors for now.",
             "required": true
+        },
+        "BOT_TOKEN": {
+            "description": "Bot token for manage assistant accounts.",
+            "required": true
         }
     },
     "formation": {
