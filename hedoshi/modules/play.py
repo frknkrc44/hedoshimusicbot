@@ -1,3 +1,12 @@
+# Copyright (C) 2020-2023 frknkrc44 <https://gitlab.com/frknkrc44>
+#
+# This file is part of HedoshiMusicBot project,
+# and licensed under GNU Affero General Public License v3.
+# See the GNU Affero General Public License for more details.
+#
+# All rights reserved. See COPYING, AUTHORS.
+#
+
 from pyrogram.types import Message
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.downloader import (download_and_start_tg_media, start_stream,
