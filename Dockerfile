@@ -7,10 +7,10 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-FROM nikolaik/python-nodejs:python3.11-nodejs18-alpine
-RUN apk update \
-    && apk upgrade \
-    && apk add ffmpeg git gcc musl-dev linux-headers
+FROM nikolaik/python-nodejs:python3.11-nodejs18-slim
+RUN apt update \
+    && apt full-upgrade -y \
+    && apt install ffmpeg git gcc linux-libc-dev -y
 
 COPY . /app/
 WORKDIR /app/
