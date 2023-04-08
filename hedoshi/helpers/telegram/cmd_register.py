@@ -72,32 +72,32 @@ def register(
 
             if admin and (not await is_admin(message) or not is_owner(message)):
                 if notify_user:
-                    await message.reply(_.translate_chat("errNotAdmin"))
+                    await message.reply(_.translate_chat("errNotAdmin", cid=message.chat.id))
                 return
 
             if bot_admin and not (await is_bot_admin(message.chat)):
                 if notify_user:
-                    await message.reply(_.translate_chat("errNotBotAdmin"))
+                    await message.reply(_.translate_chat("errNotBotAdmin", cid=message.chat.id))
                 return
 
             if message.chat.type in (ChatType.GROUP, ChatType.SUPERGROUP) and not group:
                 if notify_user:
-                    await message.reply(_.translate_chat("errGroupRestricted"))
+                    await message.reply(_.translate_chat("errGroupRestricted", cid=message.chat.id))
                 return
 
             if message.chat.type == ChatType.PRIVATE and not private:
                 if notify_user:
-                    await message.reply(_.translate_chat("errPrivateRestricted"))
+                    await message.reply(_.translate_chat("errPrivateRestricted", cid=message.chat.id))
                 return
 
             if message.command and len(message.command) < min_args:
                 if notify_user:
-                    await message.reply(_.translate_chat("errMinArgs", args=[min_args - 1]))
+                    await message.reply(_.translate_chat("errMinArgs", args=[min_args - 1], cid=message.chat.id))
                 return
 
             if max_args > -1 and message.command and len(message.command) > max_args:
                 if notify_user:
-                    await message.reply(_.translate_chat("errMaxArgs", args=[max_args]))
+                    await message.reply(_.translate_chat("errMaxArgs", args=[max_args], cid=message.chat.id))
                 return
 
             try:

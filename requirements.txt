@@ -1,6 +1,8 @@
+gitpython
+heroku3
 pyrogram
-tgcrypto
 git+https://github.com/pytgcalls/pytgcalls@master
-yt-dlp
-requests
 python-dotenv
+requests
+tgcrypto
+yt-dlp

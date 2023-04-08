@@ -57,13 +57,9 @@ def parse_telegram_url(url: str) -> Optional[Tuple[str | int | None]]:
 
 
 async def parse_telegram_url_and_stream(reply: Message, url: str, is_video: bool) -> None:
-    chat_id, message_id, topic_id = parse_telegram_url(url)  # type: ignore
+    chat_id, message_id, _ = parse_telegram_url(url)  # type: ignore
 
     if not chat_id or not message_id:
-        return
-
-    if topic_id:
-        await reply.edit(_.translate_chat('errNoTopicSupport', cid=reply.chat.id))
         return
 
     for item in userbots:
