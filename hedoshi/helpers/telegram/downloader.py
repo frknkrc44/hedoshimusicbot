@@ -19,7 +19,7 @@ from .groups import find_active_userbot_client, join_or_change_stream, userbots,
 from ... import translator as _
 
 
-async def _progress_func_wrapper(reply: Message, current: int, total: int) -> None:
+async def _progress_func_wrapper(reply: Message, current: int, total: int, upload: bool = False) -> None:
     percent = int((current / total) * 100)
     last_percent = globals()['last_percent']
     last_epoch: int = globals()['last_percent_epoch']
@@ -28,7 +28,7 @@ async def _progress_func_wrapper(reply: Message, current: int, total: int) -> No
         globals()['last_percent'] = percent
         globals()['last_percent_epoch'] = current_epoch
         try:
-            await reply.edit(_.translate_chat('mvDownloading', args=[percent], cid=reply.chat.id))
+            await reply.edit(_.translate_chat('mvUploading' if upload else 'mvDownloading', args=[percent], cid=reply.chat.id))
         except:
             pass
 
@@ -85,6 +85,34 @@ async def parse_telegram_url_and_stream(reply: Message, url: str, is_video: bool
         _.translate_chat('streamTGError', cid=reply.chat.id))  # type: ignore
 
 
+async def parse_telegram_url_and_download(reply: Message, url: str) -> Optional[str]:
+    chat_id, message_id, _ = parse_telegram_url(url)  # type: ignore
+
+    if not chat_id or not message_id:
+        return None
+
+    for item in userbots:
+        client: Client = get_client(item)
+
+        try:
+            msg = await client.get_messages(
+                chat_id=chat_id,
+                message_ids=message_id,
+            )
+            return await download_tg_media(
+                reply=reply,
+                source=msg,  # type: ignore
+                use_userbot=True,
+                userbot=client,
+            )
+        except BaseException as e:
+            raise e
+
+    await reply.edit(
+        _.translate_chat('streamTGError', cid=reply.chat.id))  # type: ignore
+    return None
+
+
 def get_downloaded_file_name(source: Message) -> Optional[str]:
     download_dir = f'{getcwd()}{sep}downloads'
 
@@ -102,13 +130,12 @@ def get_downloaded_file_name(source: Message) -> Optional[str]:
     return None
 
 
-async def download_and_start_tg_media(
+async def download_tg_media(
     reply: Message,
     source: Message,
     use_userbot: bool = False,
-    userbot: Client | None = None,
-    is_video: bool = False,
-) -> None:
+    userbot: Optional[Client] = None,
+) -> Optional[str]:
     globals()['last_percent'] = -1
     globals()['last_percent_epoch'] = 0
 
@@ -124,16 +151,59 @@ async def download_and_start_tg_media(
                 await userbot.download_media(source, progress=progress_func))
         else:
             await reply.edit(_.translate_chat('streamDLNoUserbot', cid=reply.chat.id))
-            return await download_and_start_tg_media(
+            return await download_tg_media(
                 reply=reply,
                 source=source,
                 use_userbot=False,
-                is_video=is_video,
+                userbot=userbot,
             )
     else:
         path = get_downloaded_file_name(source) or (
             await reply._client.download_media(source, progress=progress_func))
 
+    return path  # type: ignore
+
+
+async def upload_tg_media(
+    reply: Message,
+    path: str,
+    use_userbot: bool = False,
+    userbot: Optional[Client] = None,
+):
+    async def progress_func(current: int, total: int):
+        return await _progress_func_wrapper(reply, current, total, True)
+
+    if use_userbot:
+        if not userbot:
+            userbot = await find_active_userbot_client(reply)
+
+        if userbot:
+            return await userbot.send_document(
+                chat_id=reply.chat.id, 
+                document=path, 
+                progress=progress_func, 
+                reply_to_message_id=reply.id,
+            )
+        else:
+            await reply.edit(_.translate_chat('streamDLNoUserbot', cid=reply.chat.id))
+            return await upload_tg_media(
+                reply=reply,
+                path=path,
+                use_userbot=False,
+                userbot=userbot,
+            )
+    else:
+        return await reply.reply_document(path, progress=progress_func)
+
+
+async def download_and_start_tg_media(
+    reply: Message,
+    source: Message,
+    use_userbot: bool = False,
+    userbot: Client | None = None,
+    is_video: bool = False,
+) -> None:
+    path = await download_tg_media(reply, source, use_userbot, userbot)
     await start_stream(reply, path, is_video)  # type: ignore
 
 
