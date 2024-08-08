@@ -7,7 +7,7 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from pytgcalls.types import AudioPiped, AudioVideoPiped
+from pytgcalls.types import MediaStream
 from json import dumps
 from os import sep
 from typing import Optional
@@ -16,29 +16,33 @@ from .format import time_format
 class QueryItem:
     def __init__(
         self,
-        stream: AudioPiped | AudioVideoPiped,
+        stream: MediaStream,
         duration: int,
         skip: int,
         chat_id: int,
         loop: bool = False,
+        video: bool = False,
     ):
         self.stream = stream
         self.duration = duration
         self.skip = skip
         self.chat_id = chat_id
         self.loop = loop
+        self.video = video
 
     def __str__(self) -> str:
-        return dumps({
-            "stream": self.stream._path,
-            "duration": self.duration,
-            "skip": self.skip,
-            "chat_id": self.chat_id,
-            "loop": self.loop,
-        })
+        return dumps(
+            {
+                "stream": self.stream._media_path,
+                "duration": self.duration,
+                "skip": self.skip,
+                "chat_id": self.chat_id,
+                "loop": self.loop,
+            }
+        )
 
     def query_details(self, current_duration: Optional[int] = None):
-        name = self.stream._path.split(sep)[-1].split('.', 1)[0]
+        name = self.stream._media_path.split(sep)[-1].split(".", 1)[0]
         duration = time_format(self.duration)
 
         if current_duration:

@@ -1,6 +1,6 @@
 gitpython
 heroku3
-pyrogram
+git+https://github.com/PyrogramMod/PyrogramMod@main
 git+https://github.com/pytgcalls/pytgcalls@master
 python-dotenv
 requests

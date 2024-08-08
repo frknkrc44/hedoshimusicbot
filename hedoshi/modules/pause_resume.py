@@ -20,7 +20,7 @@ async def play(message: Message):
         try:
             await userbot.resume_stream(message.chat.id)
             await message.reply(_.translate_chat('streamResumed', cid=message.chat.id))
-        except:
+        except BaseException:
             pass
 
 
@@ -31,5 +31,5 @@ async def pause(message: Message):
         try:
             await userbot.pause_stream(message.chat.id)
             await message.reply(_.translate_chat('streamPaused', cid=message.chat.id))
-        except:
+        except BaseException:
             pass

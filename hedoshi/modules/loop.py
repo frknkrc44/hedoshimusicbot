@@ -7,7 +7,7 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from ..helpers import get_next_query
+from ..helpers.query import get_next_query
 from ..helpers.telegram.cmd_register import register
 from pyrogram.types import Message
 from .. import translator as _

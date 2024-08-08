@@ -11,23 +11,25 @@ from typing import Optional
 from pyrogram import Client
 from pyrogram.types import Message, User, Chat
 from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped, AudioVideoPiped, HighQualityAudio, HighQualityVideo, StreamAudioEnded, Update
+from pytgcalls.types import MediaStream, StreamAudioEnded, Update
 from ..ffmpeg.ffprobe import get_duration
-from .. import userbots, query, get_next_query
+from .. import userbots
+from ..query import query, get_next_query
 from ..query_item import QueryItem
 
 async def is_member_alive(chat: Chat, user: User) -> bool:
     try:
         chat_member = await chat.get_member(user.id)
         return chat_member.restricted_by is None
-    except:
+    except BaseException:
         return False
 
 
 async def join_or_change_stream(
     message: Message,
-    stream: AudioPiped | AudioVideoPiped,
+    stream: MediaStream,
     action: int = 0,
+    video: bool = False,
 ) -> Optional[QueryItem]:
     from ... import translator as _
 
@@ -38,9 +40,10 @@ async def join_or_change_stream(
     if not calls:
         locals()['msg'] = await message.reply(tr('astJoining'))
         try:
-            await add_userbot(message)
+            added = await add_userbot(message)
+            assert added
             calls = await find_active_userbot(message)
-        except:
+        except BaseException:
             pass
 
     if not calls:
@@ -48,7 +51,7 @@ async def join_or_change_stream(
         return None
 
     if action == 0:
-        seconds = await get_duration(stream._path)
+        seconds = await get_duration(stream._media_path)
         if not seconds:
             if 'msg' not in locals():
                 await message.reply(tr('astDurationFail'))
@@ -56,27 +59,25 @@ async def join_or_change_stream(
                 await locals()['msg'].edit(tr('astDurationFail'))
             return None
 
-        item = QueryItem(stream, seconds, 0, message.chat.id)
+        item = QueryItem(stream, seconds, 0, message.chat.id, video=video)
         query.append(item)
 
         try:
-            await calls.get_active_call(message.chat.id)
+            assert await is_active(message.chat.id, calls)
             return item
-        except:
+        except BaseException:
             pass
 
     try:
         try:
-            await calls.get_call(message.chat.id)
-            await calls.change_stream(
-                message.chat.id,
-                stream,
-            )
-        except:
-            await calls.join_group_call(
-                message.chat.id,
-                stream,
-            )
+            await calls.pause_stream(message.chat.id)
+        except BaseException:
+            pass
+
+        await calls.play(
+            message.chat.id,
+            stream,
+        )
     except BaseException as e:
         if 'msg' not in locals():
             await message.reply(tr('astPlayFail'))
@@ -92,17 +93,19 @@ async def find_active_userbot(message: Message) -> Optional[PyTgCalls]:
         pyrogram: Client = get_client(calls)
         try:
             chat = await pyrogram.get_chat(message.chat.id)
-            if await is_member_alive(chat, pyrogram.me):  # type: ignore
-                return calls
-        except:
+            alive = await is_member_alive(chat, pyrogram.me)
+            assert alive  # type: ignore
+            return calls
+        except BaseException:
             pass
 
     return None
 
+async def is_active(group_id: int, calls: PyTgCalls) -> bool:
+    return await calls.played_time(group_id)
 
 def get_client(calls: PyTgCalls) -> Client:
-    return calls._app._bind_client._app
-
+    return calls._mtproto
 
 async def find_active_userbot_client(message: Message) -> Optional[Client]:
     userbot = await find_active_userbot(message)
@@ -126,14 +129,13 @@ async def add_userbot(message: Message) -> bool:
 
 async def get_current_duration(message: Message) -> Optional[int]:
     calls = await find_active_userbot(message)
-    from .. import get_next_query
     if calls:
         query = get_next_query(message.chat.id)
         if query:
             try:
                 time = await calls.played_time(query.chat_id)
                 return query.skip + time
-            except:
+            except BaseException:
                 pass
 
     return None
@@ -142,23 +144,18 @@ async def get_current_duration(message: Message) -> Optional[int]:
 async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False) -> None:
     # if video stream ends, StreamAudioEnded and StreamVideoEnded is invoked
     # so we can ignore the video stream end signal
-    if type(update) != StreamAudioEnded:
+    if type(update) != StreamAudioEnded:  # noqa: E721
         return
 
     item = get_next_query(update.chat_id, True)
     print(item)
     if item and item.loop and not force_skip:
-        if type(item.stream) == AudioPiped:
-            piped = AudioPiped(
-                path=item.stream._path,
-                audio_parameters=HighQualityAudio(),
-            )
-        else:
-            piped = AudioVideoPiped(
-                path=item.stream._path,
-                audio_parameters=HighQualityAudio(),
-                video_parameters=HighQualityVideo(),
-            )
+        piped = MediaStream(
+            item.stream._media_path,
+            video_flags=MediaStream.Flags.IGNORE
+            if not item.video
+            else MediaStream.Flags.AUTO_DETECT,
+        )
 
         item.stream = piped
         item.skip = 0
@@ -179,8 +176,8 @@ async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False
         return
 
     try:
-        await client.leave_group_call(update.chat_id)
-    except:
+        await client.leave_call(update.chat_id)
+    except BaseException:
         pass
 
     await bot.send_message(

@@ -8,9 +8,9 @@
 #
 
 from pyrogram.types import Message
-from pytgcalls.types import AudioPiped, AudioVideoPiped, HighQualityAudio, HighQualityVideo
+from pytgcalls.types import MediaStream
 from ..helpers.telegram.cmd_register import register
-from ..helpers import get_next_query, replace_query, QueryItem
+from ..helpers.query import get_next_query, replace_query, QueryItem
 from ..helpers.telegram.groups import find_active_userbot, join_or_change_stream
 from .. import translator as _
 
@@ -37,7 +37,7 @@ async def _seek(message: Message, back_mode: bool):
         try:
             seconds = int(message.command[1])
             assert seconds > 0
-        except:
+        except BaseException:
             return
 
         item = get_next_query(message.chat.id)
@@ -47,6 +47,7 @@ async def _seek(message: Message, back_mode: bool):
         msg = await message.reply(_.translate_chat(
             'streamBackSeeking' if back_mode else 'streamSeeking', cid=item.chat_id))
         played = await userbot.played_time(item.chat_id)
+
         if back_mode:
             skip = item.skip - (played + seconds)
             if skip < 0:
@@ -56,22 +57,18 @@ async def _seek(message: Message, back_mode: bool):
             if skip >= item.duration:
                 skip = item.duration
 
-        if type(item.stream) == AudioPiped:
-            piped = AudioPiped(
-                path=item.stream._path,
-                audio_parameters=HighQualityAudio(),
-                additional_ffmpeg_parameters=f'-ss {skip}'
-            )
-        else:
-            piped = AudioVideoPiped(
-                path=item.stream._path,
-                audio_parameters=HighQualityAudio(),
-                video_parameters=HighQualityVideo(),
-                additional_ffmpeg_parameters=f'-ss {skip}'
-            )
+        piped = MediaStream(
+            item.stream._media_path,
+            video_flags=MediaStream.Flags.IGNORE
+            if not item.video
+            else MediaStream.Flags.AUTO_DETECT,
+            ffmpeg_parameters=f"-ss {skip}",
+        )
 
-        replace_query(item, QueryItem(
-            piped, item.duration, skip, item.chat_id, item.loop))
+        replace_query(
+            item,
+            QueryItem(piped, item.duration, skip, item.chat_id, item.loop, item.video),
+        )
         await join_or_change_stream(
             message=msg,
             stream=piped,

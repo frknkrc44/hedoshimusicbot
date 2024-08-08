@@ -20,8 +20,8 @@ async def leave_call(message: Message):
     if userbot:
         try:
             clear_query(message.chat.id)
-            await userbot.leave_group_call(message.chat.id)
-        except:
+            await userbot.leave_call(message.chat.id)
+        except BaseException:
             pass
 
     await message.reply(

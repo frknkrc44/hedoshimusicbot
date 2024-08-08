@@ -8,12 +8,12 @@
 #
 
 from pyrogram import Client
-from pytgcalls import PyTgCalls
+from pytgcalls import PyTgCalls, filters as CallFilters
 from pytgcalls.types import Update
 from logging import basicConfig, INFO, info, error
 from time import sleep
-from os import listdir
-from os.path import sep
+from os import listdir, mkdir
+from os.path import exists, sep
 from traceback import format_exc
 from .helpers import userbots
 from .helpers.telegram.groups import stream_end
@@ -34,6 +34,9 @@ except:
     pass
 '''
 
+if not exists("downloads"):
+    mkdir("downloads")
+
 bot = Client(
     name,
     api_id=bot_config.API_ID,  # type: ignore
@@ -48,8 +51,8 @@ for module in sorted(listdir(modules_dir)):
             __import__(
                 f"{modules_dir.replace(sep, '.')}.{module_name}")
             info(f'Module {module_name} imported!')
-        except:
-            error(f'An error occurred while import module {module}!')
+        except BaseException:
+            error(f"An error occurred while import module {module}!")
             error(format_exc())
 
 
@@ -65,7 +68,7 @@ async def add_assistants():
             )
             calls = PyTgCalls(app)
 
-            @calls.on_stream_end()
+            @calls.on_update(CallFilters.stream_end)
             async def stream_end_wrapper(client: PyTgCalls, update: Update):
                 await stream_end(client, update)
 

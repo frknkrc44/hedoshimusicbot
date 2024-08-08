@@ -12,7 +12,7 @@ from typing import Optional, Tuple
 from pyrogram import Client
 from pyrogram.enums import MessageMediaType
 from pyrogram.types import Message
-from pytgcalls.types import AudioPiped, AudioVideoPiped, HighQualityAudio, HighQualityVideo
+from pytgcalls.types import MediaStream
 from time import time
 from re import sub
 from .groups import find_active_userbot_client, join_or_change_stream, userbots, get_client
@@ -29,7 +29,7 @@ async def _progress_func_wrapper(reply: Message, current: int, total: int, uploa
         globals()['last_percent_epoch'] = current_epoch
         try:
             await reply.edit(_.translate_chat('mvUploading' if upload else 'mvDownloading', args=[percent], cid=reply.chat.id))
-        except:
+        except BaseException:
             pass
 
 
@@ -41,13 +41,13 @@ def parse_telegram_url(url: str) -> Optional[Tuple[str | int | None]]:
     new_url = sub('https?://', '', url)
     splitter = new_url.split('/')
 
-    if not splitter[0] in valid_telegram_domains:
+    if splitter[0] not in valid_telegram_domains:
         return (None, None, None)  # type: ignore
 
     increaser = 1 if 's' in splitter or 'c' in splitter else 0
     try:
         chat_id = int('-100' + splitter[1 + increaser])
-    except:
+    except BaseException:
         chat_id = splitter[1 + increaser]  # type: ignore
 
     msg_id = int(splitter[-1])
@@ -211,14 +211,13 @@ async def start_stream(reply: Message, path: str, is_video: bool) -> None:
     if path:
         item = await join_or_change_stream(
             reply,
-            AudioVideoPiped(
+            MediaStream(
                 path,
-                audio_parameters=HighQualityAudio(),
-                video_parameters=HighQualityVideo(),
-            ) if is_video else AudioPiped(
-                path,
-                audio_parameters=HighQualityAudio(),
+                video_flags=MediaStream.Flags.IGNORE
+                if not is_video
+                else MediaStream.Flags.AUTO_DETECT,
             ),
+            video=is_video,
         )
         if item:
             await reply.edit(_.translate_chat('streamQueryAdded', cid=reply.chat.id))
