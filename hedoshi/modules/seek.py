@@ -63,6 +63,7 @@ async def _seek(message: Message, back_mode: bool):
             if not item.video
             else MediaStream.Flags.AUTO_DETECT,
             ffmpeg_parameters=f"-ss {skip}",
+            video_parameters=item.stream._video_parameters,
         )
 
         replace_query(

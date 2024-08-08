@@ -9,6 +9,9 @@
 
 from fp.fp import FreeProxy
 from logging import info
+from pytgcalls.types.raw import VideoParameters
+from typing import Optional, Tuple
+from ..ffmpeg.ffprobe import get_resolution
 from yt_dlp import YoutubeDL
 from yt_dlp.postprocessor.common import PostProcessor
 import yt_dlp.extractor.extractors as ex
@@ -53,7 +56,9 @@ def is_valid(url: str):
     return _is_valid_ends(url)
 
 
-def download_media(url: str, audio: bool = False) -> str:
+def download_media(
+    url: str, audio: bool = False
+) -> Tuple[str, Optional[VideoParameters]]:
     globals()['last_percent'] = -1
     globals()['last_percent_epoch'] = 0
 
@@ -66,7 +71,7 @@ def download_media(url: str, audio: bool = False) -> str:
     if audio:
         opts['format'] = 'm4a' if 'youtube' in url else 'bestaudio/worstvideo/source'
     else:
-        opts['format'] = 'bestvideo+bestaudio/best/source'
+        opts["format"] = "bestvideo+bestaudio/best/source"
 
     filename_collector = FilenameCollectorPP()
     with YoutubeDL(opts) as ytdl:
@@ -77,7 +82,10 @@ def download_media(url: str, audio: bool = False) -> str:
             try:
                 from ... import bot_config
 
-                if getattr(bot_config, "BOT_USE_PROXY", False):
+                use_proxy = getattr(bot_config, "BOT_USE_PROXY", False)
+                print(type(use_proxy), use_proxy)
+
+                if use_proxy:
                     proxy_country = getattr(bot_config, "BOT_PROXY_COUNTRY", "")
                     proxy_split = proxy_country.split(",")
                     info(f"Trying to get a random proxy from {proxy_split}")
@@ -91,11 +99,23 @@ def download_media(url: str, audio: bool = False) -> str:
                     }
                     info(f"Set a random proxy {ytdl.proxies}")
 
-                ytdl.download([url])
+                assert not ytdl.download([url])
             except BaseException:
                 try_count = try_count + 1
                 continue
 
             break
 
-    return filename_collector.filenames[-1] if len(filename_collector.filenames) else None
+    params: Optional[VideoParameters] = None
+    if not audio and len(filename_collector.filenames):
+        raw_res = get_resolution(filename_collector.filenames[-1])
+        params = VideoParameters(
+            width=raw_res[0],
+            height=raw_res[1],
+            frame_rate=raw_res[2],
+        )
+
+    return (
+        filename_collector.filenames[-1] if len(filename_collector.filenames) else None,
+        params,
+    )

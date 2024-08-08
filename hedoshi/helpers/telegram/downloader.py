@@ -12,12 +12,13 @@ from typing import Optional, Tuple
 from pyrogram import Client
 from pyrogram.enums import MessageMediaType
 from pyrogram.types import Message
-from pytgcalls.types import MediaStream
+from pytgcalls.types import MediaStream, VideoQuality
+from pytgcalls.types.raw import VideoParameters
 from time import time
 from re import sub
 from .groups import find_active_userbot_client, join_or_change_stream, userbots, get_client
 from ... import translator as _
-
+from ..ffmpeg.ffprobe import get_resolution
 
 async def _progress_func_wrapper(reply: Message, current: int, total: int, upload: bool = False) -> None:
     percent = int((current / total) * 100)
@@ -204,10 +205,25 @@ async def download_and_start_tg_media(
     is_video: bool = False,
 ) -> None:
     path = await download_tg_media(reply, source, use_userbot, userbot)
-    await start_stream(reply, path, is_video)  # type: ignore
+
+    params: Optional[VideoParameters] = None
+    if is_video:
+        raw_res = get_resolution(path)
+        params = VideoParameters(
+            width=raw_res[0],
+            height=raw_res[1],
+            frame_rate=raw_res[2],
+        )
+
+    await start_stream(reply, path, is_video, params)  # type: ignore
 
 
-async def start_stream(reply: Message, path: str, is_video: bool) -> None:
+async def start_stream(
+    reply: Message,
+    path: str,
+    is_video: bool,
+    video_params: VideoParameters = None,
+) -> None:
     if path:
         item = await join_or_change_stream(
             reply,
@@ -216,6 +232,7 @@ async def start_stream(reply: Message, path: str, is_video: bool) -> None:
                 video_flags=MediaStream.Flags.IGNORE
                 if not is_video
                 else MediaStream.Flags.AUTO_DETECT,
+                video_parameters=video_params or VideoQuality.SD_480p,
             ),
             video=is_video,
         )

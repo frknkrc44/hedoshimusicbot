@@ -51,7 +51,7 @@ async def join_or_change_stream(
         return None
 
     if action == 0:
-        seconds = await get_duration(stream._media_path)
+        seconds = get_duration(stream._media_path)
         if not seconds:
             if 'msg' not in locals():
                 await message.reply(tr('astDurationFail'))
@@ -69,11 +69,6 @@ async def join_or_change_stream(
             pass
 
     try:
-        try:
-            await calls.pause_stream(message.chat.id)
-        except BaseException:
-            pass
-
         await calls.play(
             message.chat.id,
             stream,
@@ -155,6 +150,7 @@ async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False
             video_flags=MediaStream.Flags.IGNORE
             if not item.video
             else MediaStream.Flags.AUTO_DETECT,
+            video_parameters=item.stream._video_parameters,
         )
 
         item.stream = piped
