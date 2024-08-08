@@ -13,7 +13,6 @@ from pyrogram import Client
 from pyrogram.enums import MessageMediaType
 from pyrogram.types import Message
 from pytgcalls.types import MediaStream, VideoQuality
-from pytgcalls.types.raw import VideoParameters
 from time import time
 from re import sub
 from .groups import find_active_userbot_client, join_or_change_stream, userbots, get_client
@@ -206,25 +205,17 @@ async def download_and_start_tg_media(
 ) -> None:
     path = await download_tg_media(reply, source, use_userbot, userbot)
 
-    params: Optional[VideoParameters] = None
-    if is_video:
-        raw_res = get_resolution(path)
-        params = VideoParameters(
-            width=raw_res[0],
-            height=raw_res[1],
-            frame_rate=raw_res[2],
-        )
-
-    await start_stream(reply, path, is_video, params)  # type: ignore
+    await start_stream(reply, path, is_video)  # type: ignore
 
 
 async def start_stream(
     reply: Message,
     path: str,
     is_video: bool,
-    video_params: VideoParameters = None,
 ) -> None:
     if path:
+        video_params = get_resolution(path) if is_video else None
+
         item = await join_or_change_stream(
             reply,
             MediaStream(

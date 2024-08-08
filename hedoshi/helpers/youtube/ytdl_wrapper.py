@@ -9,9 +9,6 @@
 
 from fp.fp import FreeProxy
 from logging import info
-from pytgcalls.types.raw import VideoParameters
-from typing import Optional, Tuple
-from ..ffmpeg.ffprobe import get_resolution
 from yt_dlp import YoutubeDL
 from yt_dlp.postprocessor.common import PostProcessor
 import yt_dlp.extractor.extractors as ex
@@ -56,9 +53,7 @@ def is_valid(url: str):
     return _is_valid_ends(url)
 
 
-def download_media(
-    url: str, audio: bool = False
-) -> Tuple[str, Optional[VideoParameters]]:
+def download_media(url: str, audio: bool = False) -> str:
     globals()['last_percent'] = -1
     globals()['last_percent_epoch'] = 0
 
@@ -106,16 +101,6 @@ def download_media(
 
             break
 
-    params: Optional[VideoParameters] = None
-    if not audio and len(filename_collector.filenames):
-        raw_res = get_resolution(filename_collector.filenames[-1])
-        params = VideoParameters(
-            width=raw_res[0],
-            height=raw_res[1],
-            frame_rate=raw_res[2],
-        )
-
     return (
-        filename_collector.filenames[-1] if len(filename_collector.filenames) else None,
-        params,
+        filename_collector.filenames[-1] if len(filename_collector.filenames) else None
     )

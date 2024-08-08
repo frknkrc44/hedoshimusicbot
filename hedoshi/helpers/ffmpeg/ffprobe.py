@@ -8,7 +8,8 @@
 #
 
 from subprocess import run, PIPE
-from typing import Optional, Tuple
+from typing import Optional
+from pytgcalls.types.raw import VideoParameters
 
 
 def get_duration(path: str) -> Optional[int]:
@@ -31,7 +32,7 @@ def get_duration(path: str) -> Optional[int]:
     return int(float(res.stdout.decode()))
 
 
-def get_resolution(path: str) -> Tuple[int, int, int]:
+def get_resolution(path: str) -> VideoParameters:
     res = run(
         " ".join(
             [
@@ -56,8 +57,8 @@ def get_resolution(path: str) -> Tuple[int, int, int]:
     rate_split = out_split[2].split("/")
     rate_parsed = int(int(rate_split[0]) / int(rate_split[1]))
 
-    return (
-        int(out_split[0]),
-        int(out_split[1]),
-        rate_parsed,
+    return VideoParameters(
+        width=int(out_split[0]),
+        height=int(out_split[1]),
+        frame_rate=rate_parsed,
     )
