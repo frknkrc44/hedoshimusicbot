@@ -71,24 +71,31 @@ def download_media(url: str, audio: bool = False) -> str:
     filename_collector = FilenameCollectorPP()
     with YoutubeDL(opts) as ytdl:
         ytdl.add_post_processor(filename_collector)
-        from ... import bot_config
 
-        if getattr(bot_config, "BOT_USE_PROXY", False):
+        try_count = 0
+        while try_count < 3:
             try:
-                proxy_country = getattr(bot_config, "BOT_PROXY_COUNTRY", "")
-                proxy_split = proxy_country.split(",")
-                info(f"Trying to get a random proxy from {proxy_country}")
-                ytdl.proxies = {
-                    "https": FreeProxy(
-                        country_id=proxy_split if len(proxy_split[0]) else None,
-                        google=True,
-                        https=True,
-                    ).get(),
-                }
-                info(f"Set a random proxy {ytdl.proxies}")
-            except BaseException:
-                pass
+                from ... import bot_config
 
-        ytdl.download([url])
+                if getattr(bot_config, "BOT_USE_PROXY", False):
+                    proxy_country = getattr(bot_config, "BOT_PROXY_COUNTRY", "")
+                    proxy_split = proxy_country.split(",")
+                    info(f"Trying to get a random proxy from {proxy_split}")
+                    ytdl.proxies = {
+                        "https": FreeProxy(
+                            country_id=proxy_split if len(proxy_split[0]) else None,
+                            timeout=2,
+                            https=True,
+                            rand=True,
+                        ).get(),
+                    }
+                    info(f"Set a random proxy {ytdl.proxies}")
+
+                ytdl.download([url])
+            except BaseException:
+                try_count = try_count + 1
+                continue
+
+            break
 
     return filename_collector.filenames[-1] if len(filename_collector.filenames) else None
