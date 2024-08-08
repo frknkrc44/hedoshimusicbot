@@ -38,6 +38,7 @@ class QueryItem:
                 "skip": self.skip,
                 "chat_id": self.chat_id,
                 "loop": self.loop,
+                "video": self.video,
             }
         )
 
