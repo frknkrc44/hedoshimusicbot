@@ -1,3 +1,4 @@
+free-proxy
 gitpython
 heroku3
 git+https://github.com/PyrogramMod/PyrogramMod@main

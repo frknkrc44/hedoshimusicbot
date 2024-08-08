@@ -13,13 +13,16 @@ from logging import error
 values = dotenv_values('config.env')
 locals()['_example_var'] = '__REMOVE_THIS_BEFORE_EDIT__'
 
-if _example_var in values:  # type: ignore
-    error(f'Please remove {_example_var}!')  # type: ignore
+if _example_var in values:  # type: ignore # noqa: F821
+    error(f"Please remove {_example_var}!")  # type: ignore # noqa: F821
     quit()
 
 # add all env values as global import
 for item in values.keys():
     try:
-        globals()[item] = int(values[item])  # type: ignore
-    except:
-        globals()[item] = values[item]
+        globals()[item] = int(values[item])  # noqa: F821
+    except BaseException:
+        if values[item] in ["True", "False"]:
+            globals()[item] = bool(values[item])
+        else:
+            globals()[item] = values[item]

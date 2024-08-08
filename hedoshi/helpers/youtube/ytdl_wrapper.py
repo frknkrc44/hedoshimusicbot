@@ -7,13 +7,13 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
+from fp.fp import FreeProxy
+from logging import info
 from yt_dlp import YoutubeDL
 from yt_dlp.postprocessor.common import PostProcessor
 import yt_dlp.extractor.extractors as ex
 from os import getcwd, sep
 from re import match
-from pyrogram.types import Message
-from ... import translator as _
 
 yt_valid_ends = [
     '.m3u8'
@@ -47,13 +47,13 @@ def is_valid(url: str):
         try:
             if hasattr(item, '_VALID_URL') and match(getattr(item, '_VALID_URL'), url):
                 return True
-        except:
+        except BaseException:
             pass
 
     return _is_valid_ends(url)
 
 
-def download_media(url: str, reply: Message, audio: bool = False) -> str:
+def download_media(url: str, audio: bool = False) -> str:
     globals()['last_percent'] = -1
     globals()['last_percent_epoch'] = 0
 
@@ -71,6 +71,24 @@ def download_media(url: str, reply: Message, audio: bool = False) -> str:
     filename_collector = FilenameCollectorPP()
     with YoutubeDL(opts) as ytdl:
         ytdl.add_post_processor(filename_collector)
+        from ... import bot_config
+
+        if getattr(bot_config, "BOT_USE_PROXY", False):
+            try:
+                proxy_country = getattr(bot_config, "BOT_PROXY_COUNTRY", "")
+                proxy_split = proxy_country.split(",")
+                info(f"Trying to get a random proxy from {proxy_country}")
+                ytdl.proxies = {
+                    "https": FreeProxy(
+                        country_id=proxy_split if len(proxy_split[0]) else None,
+                        google=True,
+                        https=True,
+                    ).get(),
+                }
+                info(f"Set a random proxy {ytdl.proxies}")
+            except BaseException:
+                pass
+
         ytdl.download([url])
 
     return filename_collector.filenames[-1] if len(filename_collector.filenames) else None

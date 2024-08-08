@@ -36,7 +36,7 @@ def search_query(query: str) -> Optional[str]:
 
     tag = 'ytInitialData'
 
-    while not tag in (res := send_query()).text:
+    while tag not in (res := send_query()).text:
         sleep(1)
 
     start = res.text.index(tag) + len(tag) + 3

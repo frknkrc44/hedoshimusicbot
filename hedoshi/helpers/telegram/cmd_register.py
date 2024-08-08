@@ -29,6 +29,7 @@ async def is_admin(message: Message):
 
 
 async def is_bot_admin(chat: Chat):
+    from ... import bot
     member = await chat.get_member(bot.me.id)  # type: ignore
     return member.promoted_by is not None
 
