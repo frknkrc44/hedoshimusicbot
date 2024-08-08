@@ -46,13 +46,13 @@ async def download(message: Message):
             if parse_telegram_url(command)[0]:
                 return await parse_telegram_url_and_download(msg, command)
             elif youtube.is_valid(command):
-                path, _ = youtube.download_media(command)
+                path = youtube.download_media(command)
                 if path:
                     return await upload_file_or_send_message(path)
             else:
                 if search := yt_search.search_query(command):
                     if youtube.is_valid(search):
-                        path, _ = youtube.download_media(search)
+                        path = youtube.download_media(search)
                         if path:
                             return await upload_file_or_send_message(path)
 
