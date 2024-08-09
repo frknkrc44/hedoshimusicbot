@@ -12,6 +12,7 @@ from logging import info
 from yt_dlp import YoutubeDL
 from yt_dlp.postprocessor.common import PostProcessor
 import yt_dlp.extractor.extractors as ex
+from yt_dlp.extractor.unsupported import KnownDRMIE, KnownPiracyIE
 from os import getcwd, sep
 from re import match
 from ..proxy import get_proxy
@@ -41,6 +42,18 @@ def _is_valid_ends(url: str):
     return False
 
 
+def is_in_blacklist(url: str):
+    for rule in KnownDRMIE.URLS:
+        if match(f".*{rule}.*", url):
+            return True
+
+    for rule in KnownPiracyIE.URLS:
+        if match(f".*{rule}.*", url):
+            return True
+
+    return False
+
+
 def is_valid(url: str):
     if not url.startswith('http'):
         return False
@@ -56,6 +69,9 @@ def is_valid(url: str):
 
 
 async def download_media(url: str, audio: bool = False) -> str:
+    if is_in_blacklist(url):
+        return None
+
     globals()['last_percent'] = -1
     globals()['last_percent_epoch'] = 0
 
