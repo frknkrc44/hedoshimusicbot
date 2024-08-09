@@ -41,7 +41,7 @@ async def play(message: Message):
                     await start_stream(msg, path, video_mode)
                     return
             else:
-                if search := yt_search.search_query(command):
+                if search := await yt_search.search_query(command):
                     if youtube.is_valid(search):  # type: ignore
                         path = await youtube.download_media(search, not video_mode)  # type: ignore
                         if path:

@@ -50,7 +50,7 @@ async def download(message: Message):
                 if path:
                     return await upload_file_or_send_message(path)
             else:
-                if search := yt_search.search_query(command):
+                if search := await yt_search.search_query(command):
                     if youtube.is_valid(search):
                         path = await youtube.download_media(search)
                         if path:
