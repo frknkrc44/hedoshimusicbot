@@ -10,6 +10,8 @@
 from dotenv import dotenv_values
 from logging import error
 
+working_proxies = []
+
 values = dotenv_values('config.env')
 locals()['_example_var'] = '__REMOVE_THIS_BEFORE_EDIT__'
 

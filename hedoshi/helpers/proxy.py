@@ -1,18 +1,58 @@
+from httpx import AsyncClient
 from logging import info
 from requests import get
 from random import shuffle
 
 
-def get_proxy() -> str:
+async def get_proxy() -> str:
+    from ..bot_config import working_proxies
+
+    try_count = 0
+    while try_count < 3:
+        shuffle(working_proxies)
+
+        for item in working_proxies:
+            if not item.startswith("http"):
+                item = f"http://{item}"
+
+            if item.count(":") > 2:
+                item = item[: item.rfind(":")]
+
+            try:
+                async with AsyncClient(
+                    proxy=item,
+                    timeout=0.5,
+                ) as http:
+                    req2 = await http.get(
+                        "https://goo.gl",
+                        follow_redirects=False,
+                    )
+
+                    if req2.status_code < 400:
+                        return item
+            except BaseException:
+                continue
+
+        info("The proxy list is invalid, refreshing...")
+        await load_working_proxies()
+        try_count = try_count + 1
+
+
+async def load_working_proxies():
+    from ..bot_config import working_proxies
+
+    working_proxies.clear()
+
     proxy_dl_urls = [
         "https://raw.githubusercontent.com/Zaeem20/FREE_PROXIES_LIST/master/https.txt",
-        "https://raw.githubusercontent.com/SevenworksDev/proxy-list/main/proxies/https.txt",
-        "https://raw.githubusercontent.com/ErcinDedeoglu/proxies/main/proxies/https.txt",
         "https://raw.githubusercontent.com/zloi-user/hideip.me/main/https.txt",
+        "https://raw.githubusercontent.com/ErcinDedeoglu/proxies/main/proxies/https.txt",
     ]
-    shuffle(proxy_dl_urls)
 
     for url in proxy_dl_urls:
+        if len(working_proxies) > 3:
+            break
+
         info(f"Trying {url}")
 
         try:
@@ -42,22 +82,21 @@ def get_proxy() -> str:
                     item = item[: item.rfind(":")]
 
                 try:
-                    req2 = get(
-                        "https://goo.gl",
-                        timeout=1,
-                        allow_redirects=False,
-                        proxies={
-                            "https": item,
-                            "http": item,
-                        },
-                    )
+                    async with AsyncClient(
+                        proxy=item,
+                        timeout=0.5,
+                    ) as http:
+                        req2 = await http.get(
+                            "https://goo.gl",
+                            follow_redirects=False,
+                        )
 
-                    if req2.status_code < 400:
-                        return item
+                        if req2.status_code < 400:
+                            working_proxies.append(item)
                 except BaseException:
                     continue
 
+                if len(working_proxies) > 3:
+                    break
         except BaseException:
             pass
-
-    raise Exception

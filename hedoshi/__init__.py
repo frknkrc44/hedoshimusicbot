@@ -10,7 +10,7 @@
 from pyrogram import Client
 from pytgcalls import PyTgCalls, filters as CallFilters
 from pytgcalls.types import Update
-from logging import basicConfig, INFO, info, error
+from logging import basicConfig, FATAL, getLogger, INFO, info, error
 from time import sleep
 from os import listdir, mkdir
 from os.path import exists, sep
@@ -20,6 +20,7 @@ from .helpers.telegram.groups import stream_end
 from .translations import Translator
 
 basicConfig(level=INFO)
+getLogger("httpx").setLevel(FATAL)
 
 name = __name__
 bot_config = __import__(f'{__name__}.bot_config').bot_config

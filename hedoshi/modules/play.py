@@ -36,14 +36,14 @@ async def play(message: Message):
             if parse_telegram_url(command)[0]:  # type: ignore
                 return await parse_telegram_url_and_stream(msg, command, video_mode)
             elif youtube.is_valid(command):
-                path = youtube.download_media(command, not video_mode)
+                path = await youtube.download_media(command, not video_mode)
                 if path:
                     await start_stream(msg, path, video_mode)
                     return
             else:
                 if search := yt_search.search_query(command):
                     if youtube.is_valid(search):  # type: ignore
-                        path = youtube.download_media(search, not video_mode)  # type: ignore
+                        path = await youtube.download_media(search, not video_mode)  # type: ignore
                         if path:
                             await start_stream(msg, path, video_mode)
                             return

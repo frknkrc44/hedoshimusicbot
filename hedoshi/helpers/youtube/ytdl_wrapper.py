@@ -7,6 +7,7 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
+from asyncio import get_event_loop
 from logging import info
 from yt_dlp import YoutubeDL
 from yt_dlp.postprocessor.common import PostProcessor
@@ -14,6 +15,7 @@ import yt_dlp.extractor.extractors as ex
 from os import getcwd, sep
 from re import match
 from ..proxy import get_proxy
+from .invidious import download_from_invidious
 
 yt_valid_ends = [
     '.m3u8'
@@ -53,9 +55,25 @@ def is_valid(url: str):
     return _is_valid_ends(url)
 
 
-def download_media(url: str, audio: bool = False) -> str:
+async def download_media(url: str, audio: bool = False) -> str:
     globals()['last_percent'] = -1
     globals()['last_percent_epoch'] = 0
+
+    from ... import bot_config
+
+    use_invidious = (
+        bot_config.BOT_USE_INVIDIOUS
+        if hasattr(bot_config, "BOT_USE_INVIDIOUS")
+        else False
+    )
+
+    if use_invidious:
+        try:
+            try_invidious = await download_from_invidious(url, audio)
+            if try_invidious:
+                return try_invidious
+        except BaseException:
+            pass
 
     opts = {
         'ignoreerrors': True,
@@ -75,8 +93,6 @@ def download_media(url: str, audio: bool = False) -> str:
         try_count = 0
         while try_count < 4:
             try:
-                from ... import bot_config
-
                 use_proxy = (
                     bot_config.BOT_USE_PROXY
                     if hasattr(bot_config, "BOT_USE_PROXY")
@@ -86,14 +102,18 @@ def download_media(url: str, audio: bool = False) -> str:
                 if use_proxy and try_count < 3:
                     ytdl.cookiejar.clear()
 
-                    proxy = get_proxy()
+                    proxy = await get_proxy()
                     ytdl.proxies = {
                         "https": proxy,
                         "http": proxy,
                     }
                     info(f"Set a random proxy {ytdl.proxies}")
 
-                assert not ytdl.download([url])
+                assert not await get_event_loop().run_in_executor(
+                    None,
+                    ytdl.download,
+                    [url],
+                )
             except BaseException:
                 try_count = try_count + 1
                 continue

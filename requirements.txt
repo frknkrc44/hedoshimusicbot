@@ -1,8 +1,8 @@
 gitpython
 heroku3
+httpx
 git+https://github.com/PyrogramMod/PyrogramMod@main
 git+https://github.com/pytgcalls/pytgcalls@master
 python-dotenv
-requests
 tgcrypto
 yt-dlp
