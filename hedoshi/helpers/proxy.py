@@ -6,6 +6,7 @@ from random import shuffle
 def get_proxy() -> str:
     proxy_dl_urls = [
         "https://raw.githubusercontent.com/Zaeem20/FREE_PROXIES_LIST/master/https.txt",
+        "https://raw.githubusercontent.com/SevenworksDev/proxy-list/main/proxies/https.txt",
         "https://raw.githubusercontent.com/ErcinDedeoglu/proxies/main/proxies/https.txt",
         "https://raw.githubusercontent.com/zloi-user/hideip.me/main/https.txt",
     ]
@@ -42,7 +43,7 @@ def get_proxy() -> str:
 
                 try:
                     req2 = get(
-                        "https://1.1.1.1/help/",
+                        "https://goo.gl",
                         timeout=1,
                         allow_redirects=False,
                         proxies={
