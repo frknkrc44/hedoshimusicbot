@@ -127,6 +127,12 @@ def get_video_url(out_json: Dict) -> Optional[Tuple[str, str]]:
         else:
             last_video = item
 
+    if "container" not in last_video:
+        file_type: str = last_video["type"]
+        last_video["container"] = file_type[
+            file_type.find("/") + 1 : file_type.find(";")
+        ]
+
     return last_video["url"], last_video["container"]
 
 
