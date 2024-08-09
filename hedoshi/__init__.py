@@ -12,8 +12,8 @@ from pytgcalls import PyTgCalls, filters as CallFilters
 from pytgcalls.types import Update
 from logging import basicConfig, FATAL, getLogger, INFO, info, error
 from time import sleep
-from os import listdir, mkdir
-from os.path import exists, sep
+from os import listdir, mkdir, remove
+from os.path import exists, isfile, sep
 from traceback import format_exc
 from .helpers import userbots
 from .helpers.telegram.groups import stream_end
@@ -37,6 +37,18 @@ except:
 
 if not exists("downloads"):
     mkdir("downloads")
+else:
+    remove_file_enabled = (
+        bot_config.BOT_REMOVE_FILE_AUTO
+        if hasattr(bot_config, "BOT_REMOVE_FILE_AUTO")
+        else False
+    )
+
+    if remove_file_enabled:
+        for item in listdir("downloads"):
+            item = f"downloads/{item}"
+            if isfile(item):
+                remove(item)
 
 bot = Client(
     name,
