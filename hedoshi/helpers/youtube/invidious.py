@@ -1,10 +1,21 @@
+# Copyright (C) 2023 frknkrc44 <https://gitlab.com/frknkrc44>
+#
+# This file is part of HedoshiMusicBot project,
+# and licensed under GNU Affero General Public License v3.
+# See the GNU Affero General Public License for more details.
+#
+# All rights reserved. See COPYING, AUTHORS.
+#
+
 from httpx import AsyncClient, URL
 from yt_dlp.extractor.lazy_extractors import YoutubeIE
 from os import getcwd, remove, sep
 from os.path import exists
 from random import shuffle
 from re import match
-from typing import List, Optional
+from traceback import format_exc
+from typing import Dict, List, Optional, Tuple
+from ..ffmpeg.ffmpeg import merge_files
 
 
 async def __get_instances_list() -> List:
@@ -60,39 +71,71 @@ async def __youtube2invidious(url: str, audio: bool):
                     out_json = req.json()
                     if "error" not in out_json:
                         if audio:
-                            formats = out_json["adaptiveFormats"]
-                            last_audio = None
-
-                            for item in formats:
-                                if "audioQuality" in item:
-                                    last_audio = item
-                                else:
-                                    break
-
-                            container = last_audio["container"]
-                            if container == "webm":
-                                container = "opus"
+                            audio_url, container = get_audio_url(out_json)
 
                             return (
                                 out_json["title"],
                                 out_json["author"],
-                                last_audio["url"],
+                                audio_url,
+                                None,
                                 container,
                             )
                         else:
-                            streams = out_json["formatStreams"]
-                            if len(streams):
-                                last_stream = streams[-1]
-                                return (
-                                    out_json["title"],
-                                    out_json["author"],
-                                    last_stream["url"],
-                                    last_stream["container"],
-                                )
+                            audio_url, container = get_audio_url(out_json)
+                            video_url, container = get_video_url(out_json)
+
+                            return (
+                                out_json["title"],
+                                out_json["author"],
+                                audio_url,
+                                video_url,
+                                container,
+                            )
                     else:
                         try_count = try_count + 1
             except BaseException:
+                print(format_exc())
                 try_count = try_count + 1
+
+    return None
+
+
+def get_audio_url(out_json: Dict) -> Optional[Tuple[str, str]]:
+    formats = out_json["adaptiveFormats"]
+    last_audio = None
+
+    for item in formats:
+        if "audioQuality" in item:
+            last_audio = item
+        else:
+            break
+
+    container = last_audio["container"]
+    if container == "webm":
+        container = "opus"
+
+    return last_audio["url"], container
+
+
+def get_video_url(out_json: Dict) -> Optional[Tuple[str, str]]:
+    formats = out_json["adaptiveFormats"]
+    last_video = None
+
+    for item in formats:
+        if "audioQuality" in item:
+            continue
+        else:
+            last_video = item
+
+    return last_video["url"], last_video["container"]
+
+
+def get_audio_video_url(out_json: Dict) -> Optional[Tuple[str, str]]:
+    streams = out_json["formatStreams"]
+
+    if len(streams):
+        last_stream = streams[-1]
+        return last_stream["url"], last_stream["container"]
 
     return None
 
@@ -101,7 +144,7 @@ async def download_from_invidious(url: str, audio: bool) -> Optional[str]:
     result = await __youtube2invidious(url, audio)
 
     if result:
-        title, author, media, ext = result
+        title, author, audio_url, video_url, ext = result
     else:
         return None
 
@@ -112,24 +155,55 @@ async def download_from_invidious(url: str, audio: bool) -> Optional[str]:
     if exists(file_name):
         return file_name
 
+    audio_file = await __async_file_download(
+        audio_url,
+        f"{file_name}-aud" if video_url else file_name,
+    )
+
+    if not audio_file:
+        return None
+
+    if video_url:
+        video_file = await __async_file_download(
+            video_url,
+            f"{file_name}-vid",
+        )
+
+        if not video_file:
+            return None
+
+        if await merge_files(audio_file, video_file, file_name):
+            remove(audio_file)
+            remove(video_file)
+
+            return file_name
+    else:
+        return audio_file
+
+    return None
+
+
+async def __async_file_download(url: str, file_name: str) -> Optional[str]:
+    http_headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0 Win64 x64 rv:109.0) Gecko/20100101 Firefox/113.0",
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "tr,en-USq=0.7,enq=0.3",
+        "Connection": "keep-alive",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-site",
+        "Sec-GPC": "1",
+        "Priority": "u=1",
+    }
+
     async with AsyncClient() as http:
         output = open(file_name, "wb")
 
         async with http.stream(
             "GET",
-            URL(media),
+            URL(url),
             follow_redirects=True,
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0 Win64 x64 rv:109.0) Gecko/20100101 Firefox/113.0",
-                "Accept": "application/json, text/plain, */*",
-                "Accept-Language": "tr,en-USq=0.7,enq=0.3",
-                "Connection": "keep-alive",
-                "Sec-Fetch-Dest": "empty",
-                "Sec-Fetch-Mode": "cors",
-                "Sec-Fetch-Site": "same-site",
-                "Sec-GPC": "1",
-                "Priority": "u=1",
-            },
+            headers=http_headers,
         ) as stream:
             print("Status:", stream.status_code)
             if stream.status_code >= 400:
