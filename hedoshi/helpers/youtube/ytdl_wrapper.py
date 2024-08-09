@@ -85,8 +85,12 @@ def download_media(url: str, audio: bool = False) -> str:
                 print(type(use_proxy), use_proxy)
 
                 if use_proxy and try_count < 3:
+                    ytdl.cookiejar.clear()
+
+                    proxy = get_proxy()
                     ytdl.proxies = {
-                        "https": get_proxy(),
+                        "https": proxy,
+                        "http": proxy,
                     }
                     info(f"Set a random proxy {ytdl.proxies}")
 

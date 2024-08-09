@@ -48,7 +48,10 @@ def get_proxy() -> str:
                     req2 = get(
                         "https://www.youtube.com",
                         timeout=1,
-                        proxies={"https": item},
+                        proxies={
+                            "https": item,
+                            "http": item,
+                        },
                     )
                     info(f"Status code: {req2.status_code}")
 
