@@ -43,8 +43,13 @@ async def __get_valid_invidious_mirror(tried_instances: List[str]) -> Optional[s
     return None
 
 
+def is_valid_invidious_match(url: str):
+    return match(YoutubeIE._VALID_URL, url)
+
+
 async def __youtube2invidious(url: str, audio: bool):
-    if match(YoutubeIE._VALID_URL, url):
+    if is_valid_invidious_match(url):
+        print("Valid match")
         try_count = 0
 
         tried_instances = []

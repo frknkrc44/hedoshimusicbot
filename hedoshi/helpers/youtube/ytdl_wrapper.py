@@ -16,7 +16,7 @@ from yt_dlp.extractor.unsupported import KnownDRMIE, KnownPiracyIE
 from os import getcwd, sep
 from re import match
 from ..proxy import get_proxy
-from .invidious import download_from_invidious
+from .invidious import download_from_invidious, is_valid_invidious_match
 
 yt_valid_ends = [
     '.m3u8'
@@ -83,7 +83,7 @@ async def download_media(url: str, audio: bool = False) -> str:
         else False
     )
 
-    if use_invidious:
+    if use_invidious and is_valid_invidious_match(url):
         try_count = 0
         while try_count < 10:
             try:
