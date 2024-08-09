@@ -7,13 +7,13 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from fp.fp import FreeProxy
 from logging import info
 from yt_dlp import YoutubeDL
 from yt_dlp.postprocessor.common import PostProcessor
 import yt_dlp.extractor.extractors as ex
 from os import getcwd, sep
 from re import match
+from ..proxy import get_proxy
 
 yt_valid_ends = [
     '.m3u8'
@@ -73,24 +73,20 @@ def download_media(url: str, audio: bool = False) -> str:
         ytdl.add_post_processor(filename_collector)
 
         try_count = 0
-        while try_count < 3:
+        while try_count < 4:
             try:
                 from ... import bot_config
 
-                use_proxy = getattr(bot_config, "BOT_USE_PROXY", False)
+                use_proxy = (
+                    bot_config.BOT_USE_PROXY
+                    if hasattr(bot_config, "BOT_USE_PROXY")
+                    else False
+                )
                 print(type(use_proxy), use_proxy)
 
-                if use_proxy:
-                    proxy_country = getattr(bot_config, "BOT_PROXY_COUNTRY", "")
-                    proxy_split = proxy_country.split(",")
-                    info(f"Trying to get a random proxy from {proxy_split}")
+                if use_proxy and try_count < 3:
                     ytdl.proxies = {
-                        "https": FreeProxy(
-                            country_id=proxy_split if len(proxy_split[0]) else None,
-                            timeout=2,
-                            https=True,
-                            rand=True,
-                        ).get(),
+                        "https": get_proxy(),
                     }
                     info(f"Set a random proxy {ytdl.proxies}")
 

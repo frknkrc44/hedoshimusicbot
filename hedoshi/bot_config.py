@@ -23,6 +23,6 @@ for item in values.keys():
         globals()[item] = int(values[item])  # noqa: F821
     except BaseException:
         if values[item] in ["True", "False"]:
-            globals()[item] = bool(values[item])
+            globals()[item] = values[item] == "True"
         else:
             globals()[item] = values[item]
