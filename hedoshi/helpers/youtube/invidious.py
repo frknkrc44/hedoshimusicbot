@@ -71,7 +71,7 @@ async def __youtube2invidious(url: str, audio: bool):
                     out_json = req.json()
                     if "error" not in out_json:
                         if audio:
-                            audio_url, container = get_audio_url(out_json)
+                            audio_url, container = __get_audio_url(out_json)
 
                             return (
                                 out_json["title"],
@@ -80,9 +80,28 @@ async def __youtube2invidious(url: str, audio: bool):
                                 None,
                                 container,
                             )
+
+                        from ... import bot_config
+
+                        use_legacy = (
+                            bot_config.BOT_INVIDIOUS_LEGACY_VIDEO
+                            if hasattr(bot_config, "BOT_INVIDIOUS_LEGACY_VIDEO")
+                            else False
+                        )
+
+                        if use_legacy:
+                            audio_video_url, container = __get_audio_video_url(out_json)
+
+                            return (
+                                out_json["title"],
+                                out_json["author"],
+                                None,
+                                audio_video_url,
+                                container,
+                            )
                         else:
-                            audio_url, container = get_audio_url(out_json)
-                            video_url, container = get_video_url(out_json)
+                            audio_url, _ = __get_audio_url(out_json)
+                            video_url, container = __get_video_url(out_json)
 
                             return (
                                 out_json["title"],
@@ -100,7 +119,7 @@ async def __youtube2invidious(url: str, audio: bool):
     return None
 
 
-def get_audio_url(out_json: Dict) -> Optional[Tuple[str, str]]:
+def __get_audio_url(out_json: Dict) -> Optional[Tuple[str, str]]:
     formats = out_json["adaptiveFormats"]
     last_audio = None
 
@@ -117,7 +136,7 @@ def get_audio_url(out_json: Dict) -> Optional[Tuple[str, str]]:
     return last_audio["url"], container
 
 
-def get_video_url(out_json: Dict) -> Optional[Tuple[str, str]]:
+def __get_video_url(out_json: Dict) -> Optional[Tuple[str, str]]:
     formats = out_json["adaptiveFormats"]
     last_video = None
 
@@ -136,7 +155,7 @@ def get_video_url(out_json: Dict) -> Optional[Tuple[str, str]]:
     return last_video["url"], last_video["container"]
 
 
-def get_audio_video_url(out_json: Dict) -> Optional[Tuple[str, str]]:
+def __get_audio_video_url(out_json: Dict) -> Optional[Tuple[str, str]]:
     streams = out_json["formatStreams"]
 
     if len(streams):
@@ -160,6 +179,14 @@ async def download_from_invidious(url: str, audio: bool) -> Optional[str]:
 
     if exists(file_name):
         return file_name
+
+    if not audio_url and video_url:
+        video_file = await __async_file_download(
+            video_url,
+            f"{file_name}",
+        )
+
+        return video_file
 
     audio_file = await __async_file_download(
         audio_url,
