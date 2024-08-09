@@ -12,9 +12,9 @@ from typing import List, Optional
 from .query_item import QueryItem
 
 class QueryList(List[QueryItem]):
-    def media_in_use(self, path: str) -> bool:
+    def media_in_use(self, value: QueryItem) -> bool:
         for i in self:
-            if i.stream._media_path == path:
+            if value != i and i.stream._media_path == value.stream._media_path:
                 return True
 
         return False
@@ -25,7 +25,7 @@ class QueryList(List[QueryItem]):
         return item
 
     def remove_item(self, value: QueryItem) -> None:
-        if self.media_in_use(value.stream._media_path):
+        if not self.media_in_use(value):
             remove_file(value.stream._media_path)
 
         self.remove(value)
