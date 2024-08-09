@@ -82,7 +82,6 @@ def download_media(url: str, audio: bool = False) -> str:
                     if hasattr(bot_config, "BOT_USE_PROXY")
                     else False
                 )
-                print(type(use_proxy), use_proxy)
 
                 if use_proxy and try_count < 3:
                     ytdl.cookiejar.clear()
