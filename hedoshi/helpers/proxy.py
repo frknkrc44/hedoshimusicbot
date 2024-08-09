@@ -37,6 +37,9 @@ def get_proxy() -> str:
                 if not item.startswith("http"):
                     item = f"http://{item}"
 
+                if item.count(":") > 2:
+                    item = item[: item.rfind(":")]
+
                 try:
                     req2 = get(
                         "https://1.1.1.1/help/",
