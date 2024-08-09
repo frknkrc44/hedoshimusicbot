@@ -129,6 +129,12 @@ def __get_audio_url(out_json: Dict) -> Optional[Tuple[str, str]]:
         else:
             break
 
+    if "container" not in last_audio:
+        file_type: str = last_audio["type"]
+        last_audio["container"] = file_type[
+            file_type.find("/") + 1 : file_type.find(";")
+        ]
+
     container = last_audio["container"]
     if container == "webm":
         container = "opus"
