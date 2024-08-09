@@ -7,6 +7,7 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
+from logging import info
 from os import remove as remove_file
 from typing import List, Optional
 from .query_item import QueryItem
@@ -25,7 +26,18 @@ class QueryList(List[QueryItem]):
         return item
 
     def remove_item(self, value: QueryItem) -> None:
-        if not self.media_in_use(value):
+        from .. import bot_config
+
+        remove_file_enabled = (
+            bot_config.BOT_REMOVE_FILE_AUTO
+            if hasattr(bot_config, "BOT_REMOVE_FILE_AUTO")
+            else False
+        )
+
+        if remove_file_enabled and not self.media_in_use(value):
+            info(
+                f"Auto-remove enabled and the media not in use, removing {value.stream._media_path}"
+            )
             remove_file(value.stream._media_path)
 
         self.remove(value)
