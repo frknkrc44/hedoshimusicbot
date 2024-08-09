@@ -68,12 +68,14 @@ async def download_media(url: str, audio: bool = False) -> str:
     )
 
     if use_invidious:
-        try:
-            try_invidious = await download_from_invidious(url, audio)
-            if try_invidious:
-                return try_invidious
-        except BaseException:
-            pass
+        try_count = 0
+        while try_count < 10:
+            try:
+                try_invidious = await download_from_invidious(url, audio)
+                if try_invidious:
+                    return try_invidious
+            except BaseException:
+                try_count = try_count + 1
 
     opts = {
         'ignoreerrors': True,
