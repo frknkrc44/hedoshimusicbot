@@ -10,7 +10,7 @@
 from pyrogram.types import Message
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.groups import get_current_duration
-from ..helpers.query import query
+from ..helpers.query import get_queries_by_chat
 from .. import translator as _
 from ..helpers.format import time_format
 
@@ -18,6 +18,8 @@ from ..helpers.format import time_format
 @register(cmd='query|sira')
 async def lquery(message: Message):
     out = ''
+    query = get_queries_by_chat(message.chat.id)
+
     if not len(query):
         out = _.translate_chat('queryEmpty', cid=message.chat.id)
     else:

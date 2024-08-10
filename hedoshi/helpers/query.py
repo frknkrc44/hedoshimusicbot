@@ -52,6 +52,15 @@ class QueryList(List[QueryItem]):
 query = QueryList()
 
 
+def get_queries_by_chat(chat_id: int) -> List[QueryItem]:
+    new_list = []
+    for item in query:
+        if item.chat_id == chat_id:
+            new_list.append(item)
+
+    return new_list
+
+
 def get_next_query(chat_id: int, delete: bool = False) -> Optional[QueryItem]:
     if not len(query):
         return None
