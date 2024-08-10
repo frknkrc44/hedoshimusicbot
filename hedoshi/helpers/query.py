@@ -9,13 +9,17 @@
 
 from logging import info
 from os import remove as remove_file
+from os.path import exists as exists_file, basename
 from typing import List, Optional
 from .query_item import QueryItem
 
 class QueryList(List[QueryItem]):
     def media_in_use(self, value: QueryItem) -> bool:
         for i in self:
-            if value != i and i.stream._media_path == value.stream._media_path:
+            base_i = basename(i.stream._media_path)
+            base_value = basename(value.stream._media_path)
+
+            if base_i == base_value and i != value:
                 return True
 
         return False
@@ -38,7 +42,9 @@ class QueryList(List[QueryItem]):
             info(
                 f"Auto-remove enabled and the media not in use, removing {value.stream._media_path}"
             )
-            remove_file(value.stream._media_path)
+
+            if exists_file(value.stream._media_path):
+                remove_file(value.stream._media_path)
 
         self.remove(value)
 
