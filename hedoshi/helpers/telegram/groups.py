@@ -151,24 +151,22 @@ async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False
     if type(update) != StreamAudioEnded:  # noqa: E721
         return
 
-    item = get_next_query(update.chat_id, True)
-    print(item)
+    item = get_next_query(update.chat_id)
     if item and item.loop and not force_skip:
-        piped = MediaStream(
+        item.skip = 0
+        item.stream = MediaStream(
             item.stream._media_path,
             video_flags=MediaStream.Flags.IGNORE
             if not item.video
             else MediaStream.Flags.AUTO_DETECT,
             video_parameters=item.stream._video_parameters,
         )
-
-        item.stream = piped
-        item.skip = 0
-        query.insert(0, item)
+    else:
+        get_next_query(update.chat_id, True)
+        item = get_next_query(update.chat_id)
 
     from ... import bot, translator
 
-    item = get_next_query(update.chat_id)
     if item:
         msg = await bot.send_message(
             update.chat_id,
@@ -177,7 +175,13 @@ async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False
                 cid=update.chat_id,
             )
         )
-        await join_or_change_stream(msg, item.stream, item.file_name, 1)
+        await join_or_change_stream(
+            msg,
+            item.stream,
+            item.file_name,
+            1,
+            item.video,
+        )
         return
 
     try:
