@@ -1,4 +1,4 @@
-# Copyright (C) 2023 frknkrc44 <https://gitlab.com/frknkrc44>
+# Copyright (C) 2024 frknkrc44 <https://gitlab.com/frknkrc44>
 #
 # This file is part of HedoshiMusicBot project,
 # and licensed under GNU Affero General Public License v3.
