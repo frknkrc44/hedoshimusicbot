@@ -114,25 +114,34 @@ async def parse_telegram_url_and_download(reply: Message, url: str) -> Optional[
     return None
 
 
+def escape_file_name(name: str, id: str):
+    return f"downloads{sep}{id}{name[name.rfind('.'):]}"
+
+
 def get_downloaded_file_name(
     source: Message,
     force_return: bool = False,
 ) -> Optional[str]:
-    def escape_file_name(name: str):
-        escaped_name = name.replace('"', "").replace("'", "")
-        return f"downloads{sep}{escaped_name}"
-
     match source.media:
         case MessageMediaType.AUDIO:
-            escaped_name = escape_file_name(source.audio.file_name)
+            escaped_name = escape_file_name(
+                source.audio.file_name,
+                source.audio.file_id,
+            )
             if exists(escaped_name) or force_return:
                 return escaped_name
         case MessageMediaType.DOCUMENT:
-            escaped_name = escape_file_name(source.document.file_name)
+            escaped_name = escape_file_name(
+                source.document.file_name,
+                source.document.file_id,
+            )
             if exists(escaped_name) or force_return:
                 return escaped_name
         case MessageMediaType.VIDEO:
-            escaped_name = escape_file_name(source.video.file_name)
+            escaped_name = escape_file_name(
+                source.video.file_name,
+                source.video.file_id,
+            )
             if exists(escaped_name) or force_return:
                 return escaped_name
 
