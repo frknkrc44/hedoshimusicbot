@@ -258,8 +258,9 @@ async def __async_file_download(url: str, file_name: str) -> Optional[str]:
 
                 return None
 
-            val = await stream.aread()
-            output.write(val)
+            async for data in stream.aiter_bytes():
+                output.write(data)
+
             output.close()
             print("Download finished!")
 
