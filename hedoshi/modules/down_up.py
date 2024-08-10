@@ -10,7 +10,11 @@
 from pyrogram.types import Message
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.downloader import (
-    download_tg_media, parse_telegram_url_and_download, parse_telegram_url)
+    download_tg_media,
+    parse_telegram_url_and_download,
+    parse_telegram_url,
+    _progress_func_wrapper,
+)
 from ..helpers.youtube import ytdl_wrapper as youtube, yt_search
 from .. import translator as _
 from os.path import basename
@@ -21,10 +25,17 @@ async def download(message: Message):
     msg = await message.reply_text(_.translate_chat('mvProcessing', cid=message.chat.id))
     upload_mode = message.command[0].startswith('u')
 
+    async def progress_func(current: int, total: int):
+        return await _progress_func_wrapper(msg, current, total, upload=True)
+
     async def upload_file_or_send_message(path: str) -> None:
         upload_path = f'downloads/{basename(path)}'
         if upload_mode:
-            await message.reply_document(path, caption=basename(path))
+            await message.reply_document(
+                path,
+                caption=basename(path),
+                progress=progress_func,
+            )
             await msg.edit(_.translate_chat('mvUploaded', cid=message.chat.id, args=[upload_path]))
         else:
             await msg.edit(_.translate_chat('mvDownloaded', cid=message.chat.id, args=[upload_path]))
