@@ -12,6 +12,7 @@ from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.downloader import (download_and_start_tg_media, start_stream,
                                            parse_telegram_url, parse_telegram_url_and_stream)
 from ..helpers.youtube import ytdl_wrapper as youtube, yt_search
+from ..helpers.spotify import is_spotify_track
 from .. import translator as _
 
 
@@ -35,17 +36,21 @@ async def play(message: Message):
             command = ' '.join(message.command[1:])
             if parse_telegram_url(command)[0]:  # type: ignore
                 return await parse_telegram_url_and_stream(msg, command, video_mode)
-            elif youtube.is_valid(command):
+            elif youtube.is_valid(command) and not is_spotify_track(command):
                 path = await youtube.download_media(command, not video_mode)
                 if path:
                     await start_stream(msg, path, video_mode)
                     return
             else:
-                if search := await yt_search.search_query(command):
-                    if youtube.is_valid(search):  # type: ignore
-                        path = await youtube.download_media(search, not video_mode)  # type: ignore
-                        if path:
-                            await start_stream(msg, path, video_mode)
-                            return
+                if is_spotify_track(command):
+                    search = await yt_search.search_from_spotify_link(command)
+                else:
+                    search = await yt_search.search_query(command)
+
+                if youtube.is_valid(search):  # type: ignore
+                    path = await youtube.download_media(search, not video_mode)  # type: ignore
+                    if path:
+                        await start_stream(msg, path, video_mode)
+                        return
 
     await msg.edit(_.translate_chat('streamNoSrc', cid=message.chat.id))

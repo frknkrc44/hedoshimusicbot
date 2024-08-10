@@ -55,7 +55,7 @@ def is_in_blacklist(url: str):
 
 
 def is_valid(url: str):
-    if not url.startswith('http'):
+    if not url or not url.startswith("http"):
         return False
 
     for item in ex._ALL_CLASSES:

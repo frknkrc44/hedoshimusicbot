@@ -8,10 +8,17 @@
 #
 
 from httpx import AsyncClient
-from typing import Optional
+from typing import Optional, Tuple
 from urllib.parse import quote_plus
 from time import sleep
 from json import loads
+from ..spotify import spotify_get_track_info
+
+
+async def search_from_spotify_link(url: str) -> Optional[str]:
+    track_info: Tuple = await spotify_get_track_info(url)
+    if track_info:
+        return await search_query(" ".join(track_info))
 
 
 async def search_query(query: str) -> Optional[str]:
