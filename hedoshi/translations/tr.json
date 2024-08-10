@@ -1,6 +1,6 @@
 {
     "errNotAdmin": "Yönetici değilsin",
-    "errNotBotAdmin": "Bot yönetici değil",
+    "errNotBotAdmin": "Bota üye ekleme yetkisi verilmemiş",
     "errGroupRestricted": "Bu komut sadece özelde çalışır",
     "errPrivateRestricted": "Bu komut sadece gruplarda çalışır",
     "errNoTopicSupport": "Bu bot henüz konuları desteklemiyor",

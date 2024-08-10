@@ -20,6 +20,7 @@ from typing import Optional
 
 def is_owner(message: Message):
     from ... import bot_config
+
     return message.from_user.id == bot_config.BOT_OWNER
 
 
@@ -30,8 +31,9 @@ async def is_admin(message: Message):
 
 async def is_bot_admin(chat: Chat):
     from ... import bot
-    member = await chat.get_member(bot.me.id)  # type: ignore
-    return member.promoted_by is not None
+
+    member = await chat.get_member(bot.me.id)
+    return member.privileges and member.privileges.can_invite_users
 
 
 def register(

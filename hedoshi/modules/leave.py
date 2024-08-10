@@ -14,7 +14,7 @@ from ..helpers.query import clear_query
 from .. import translator as _
 
 
-@register(cmd='leave|ayril|end|son')
+@register(cmd="leave|ayril|end|son|bitir")
 async def leave_call(message: Message):
     userbot = await find_active_userbot(message)
     if userbot:
