@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 
 
 def is_spotify_track(url: str):
-    return match(r".*open\.spotify\.com/track/.*", url)
+    return match(r".*open\.spotify\.com/(?:.*)track/.*", url)
 
 
 async def spotify_get_track_info(url: str) -> Optional[Tuple[str, str]]:
