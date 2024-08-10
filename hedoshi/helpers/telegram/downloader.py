@@ -118,6 +118,18 @@ def escape_file_name(name: str, id: str):
     return f"downloads{sep}{id}{name[name.rfind('.'):]}"
 
 
+def __get_raw_file_name(source: Message):
+    match source.media:
+        case MessageMediaType.AUDIO:
+            return source.audio.file_name
+        case MessageMediaType.DOCUMENT:
+            return source.document.file_name
+        case MessageMediaType.VIDEO:
+            return source.video.file_name
+
+    return None
+
+
 def get_downloaded_file_name(
     source: Message,
     force_return: bool = False,
@@ -233,13 +245,19 @@ async def download_and_start_tg_media(
 ) -> None:
     path = await download_tg_media(reply, source, use_userbot, userbot)
 
-    await start_stream(reply, path, is_video)  # type: ignore
+    await start_stream(
+        reply,
+        path,
+        is_video,
+        __get_raw_file_name(source),
+    )  # type: ignore
 
 
 async def start_stream(
     reply: Message,
     path: str,
     is_video: bool,
+    file_name: str,
 ) -> None:
     if path:
         video_params = get_resolution(path) if is_video else None
@@ -253,6 +271,7 @@ async def start_stream(
                 else MediaStream.Flags.AUTO_DETECT,
                 video_parameters=video_params or VideoQuality.SD_480p,
             ),
+            file_name,
             video=is_video,
         )
         if item:

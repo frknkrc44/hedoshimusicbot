@@ -7,7 +7,6 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from os import sep
 from pyrogram.types import Message
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.groups import get_current_duration
@@ -30,15 +29,13 @@ async def lquery(message: Message):
         for i in range(len(query)):
             item = query[i]
             num = show_current_or_number(i)
-            name = item.stream._media_path.split(sep)[-1]
-            name = name[:name.find('.')]
             current = f'{time_format(await get_current_duration(message))}/' if i == 0 else ''
             duration = _.translate_chat(
                 'queryDuration',
                 args=[f'{current}{time_format(item.duration)}'],
                 cid=item.chat_id,
             )
-            out = out + f'**{num}**\n{name}\n{duration}\n\n'
+            out = out + f"**{num}**\n{query[i].file_name}\n{duration}\n\n"
 
     await message.reply(out)
 

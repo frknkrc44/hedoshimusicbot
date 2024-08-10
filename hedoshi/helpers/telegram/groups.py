@@ -28,6 +28,7 @@ async def is_member_alive(chat: Chat, user: User) -> bool:
 async def join_or_change_stream(
     message: Message,
     stream: MediaStream,
+    file_name: str,
     action: int = 0,
     video: bool = False,
 ) -> Optional[QueryItem]:
@@ -59,7 +60,14 @@ async def join_or_change_stream(
                 await locals()['msg'].edit(tr('astDurationFail'))
             return None
 
-        item = QueryItem(stream, seconds, 0, message.chat.id, video=video)
+        item = QueryItem(
+            stream,
+            seconds,
+            0,
+            message.chat.id,
+            file_name,
+            video=video,
+        )
         query.append(item)
 
         try:
@@ -168,7 +176,7 @@ async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False
                 cid=update.chat_id,
             )
         )
-        await join_or_change_stream(msg, item.stream, 1)
+        await join_or_change_stream(msg, item.stream, item.file_name, 1)
         return
 
     try:

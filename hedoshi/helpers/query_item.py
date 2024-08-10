@@ -9,7 +9,6 @@
 
 from pytgcalls.types import MediaStream
 from json import dumps
-from os import sep
 from typing import Optional
 from .format import time_format
 
@@ -20,6 +19,7 @@ class QueryItem:
         duration: int,
         skip: int,
         chat_id: int,
+        file_name: str,
         loop: bool = False,
         video: bool = False,
     ):
@@ -27,6 +27,7 @@ class QueryItem:
         self.duration = duration
         self.skip = skip
         self.chat_id = chat_id
+        self.file_name = file_name
         self.loop = loop
         self.video = video
 
@@ -37,16 +38,16 @@ class QueryItem:
                 "duration": self.duration,
                 "skip": self.skip,
                 "chat_id": self.chat_id,
+                "file_name": self.file_name,
                 "loop": self.loop,
                 "video": self.video,
             }
         )
 
     def query_details(self, current_duration: Optional[int] = None):
-        name = self.stream._media_path.split(sep)[-1].split(".", 1)[0]
         duration = time_format(self.duration)
 
         if current_duration:
-            duration = f'{time_format(current_duration)}/' + duration
+            duration = f"{time_format(current_duration)}/{duration}"
 
-        return f'{name}\n{duration}'
+        return f"{self.file_name}\n{duration}"

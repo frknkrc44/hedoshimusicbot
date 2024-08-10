@@ -73,6 +73,7 @@ async def _seek(message: Message, back_mode: bool):
         await join_or_change_stream(
             message=msg,
             stream=piped,
+            file_name=item.file_name,
             action=1,
         )
         await msg.edit(_.translate_chat(

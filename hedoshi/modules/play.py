@@ -7,6 +7,7 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
+from os.path import basename
 from pyrogram.types import Message
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.downloader import (download_and_start_tg_media, start_stream,
@@ -39,7 +40,7 @@ async def play(message: Message):
             elif youtube.is_valid(command) and not is_spotify_track(command):
                 path = await youtube.download_media(command, not video_mode)
                 if path:
-                    await start_stream(msg, path, video_mode)
+                    await start_stream(msg, path, video_mode, basename(path))
                     return
             else:
                 if is_spotify_track(command):
@@ -50,7 +51,7 @@ async def play(message: Message):
                 if youtube.is_valid(search):  # type: ignore
                     path = await youtube.download_media(search, not video_mode)  # type: ignore
                     if path:
-                        await start_stream(msg, path, video_mode)
+                        await start_stream(msg, path, video_mode, basename(path))
                         return
 
     await msg.edit(_.translate_chat('streamNoSrc', cid=message.chat.id))
