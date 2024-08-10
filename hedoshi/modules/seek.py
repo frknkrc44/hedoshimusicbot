@@ -68,7 +68,15 @@ async def _seek(message: Message, back_mode: bool):
 
         replace_query(
             item,
-            QueryItem(piped, item.duration, skip, item.chat_id, item.loop, item.video),
+            QueryItem(
+                piped,
+                item.duration,
+                skip,
+                item.chat_id,
+                item.file_name,
+                item.loop,
+                item.video,
+            ),
         )
         await join_or_change_stream(
             message=msg,
