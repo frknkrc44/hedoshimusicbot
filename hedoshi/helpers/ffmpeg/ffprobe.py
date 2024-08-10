@@ -28,7 +28,10 @@ def get_duration(path: str) -> Optional[int]:
         ),
         shell=True,
         stdout=PIPE,
+        stderr=PIPE,
     )
+
+    print(res.stderr.decode())
     return int(float(res.stdout.decode()))
 
 
@@ -50,8 +53,10 @@ def get_resolution(path: str) -> VideoParameters:
         ),
         shell=True,
         stdout=PIPE,
+        stderr=PIPE,
     )
 
+    print(res.stderr.decode())
     output = res.stdout.decode()
     out_split = output.split("x")
     rate_split = out_split[2].split("/")
