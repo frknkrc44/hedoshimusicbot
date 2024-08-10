@@ -111,13 +111,13 @@ async def find_active_userbot_client(message: Message) -> Optional[Client]:
 
 
 async def add_userbot(message: Message) -> bool:
-    from ... import bot
-
     for calls in userbots:
-        result = await bot.add_chat_members(
-            message.chat.id, get_client(calls).me.id)  # type: ignore
-        if result:
-            return True
+        invite_link: str = await message.chat.export_invite_link()
+
+        try:
+            await get_client(calls).join_chat(invite_link)
+        except BaseException:
+            return False
 
     return False
 

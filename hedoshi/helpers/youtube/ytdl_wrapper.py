@@ -90,6 +90,7 @@ async def download_media(url: str, audio: bool = False) -> str:
                 try_invidious = await download_from_invidious(url, audio)
                 if try_invidious:
                     return try_invidious
+                try_count = try_count + 1
             except BaseException:
                 try_count = try_count + 1
 
