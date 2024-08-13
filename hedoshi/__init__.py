@@ -7,10 +7,21 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
+from asyncio import iscoroutine, run, sleep as async_sleep
 from pyrogram import Client
 from pytgcalls import PyTgCalls, filters as CallFilters
-from logging import basicConfig, FATAL, getLogger, INFO, info, error
+from logging import (
+    LogRecord,
+    basicConfig,
+    FATAL,
+    getLogger,
+    INFO,
+    info,
+    error,
+    NullHandler,
+)
 from time import sleep
+from typing import Callable
 from os import listdir, mkdir, remove
 from os.path import exists, isfile, sep
 from traceback import format_exc
@@ -21,18 +32,30 @@ from .translations import Translator
 basicConfig(level=INFO)
 getLogger("httpx").setLevel(FATAL)
 
+class MyNullHandler(NullHandler):
+    def __init__(
+        self,
+        level: int | str = INFO,
+        on_error: Callable[[], None] = None,
+    ) -> None:
+        super().__init__(level)
+        self.on_error = on_error
+
+    def handle(self, record: LogRecord) -> bool:
+        if "Connection lost" in record.getMessage():
+            if iscoroutine(self.on_error):
+                run(self.on_error())
+            else:
+                self.on_error()
+
+        return super().handle(record)
+
+
 name = __name__
-bot_config = __import__(f'{__name__}.bot_config').bot_config
-max_userbots = int(getattr(bot_config, 'MAX_ASSISTANT_COUNT', 4))
+bot_config = __import__(f"{__name__}.bot_config").bot_config
+max_userbots = int(getattr(bot_config, "MAX_ASSISTANT_COUNT", 4))
 translator = Translator()
 modules_dir = f"{__name__}{sep}modules"
-
-'''
-try:
-    rmtree(f'{getcwd()}{sep}downloads', ignore_errors=True)
-except:
-    pass
-'''
 
 if not exists("downloads"):
     mkdir("downloads")
@@ -49,11 +72,35 @@ else:
             if isfile(item):
                 remove(item)
 
+
+def reconnect(client: Client):
+    async def fn():
+        try:
+            await client.disconnect()
+        except BaseException:
+            pass
+
+        await async_sleep(2)
+
+        try:
+            await client.connect()
+        except BaseException:
+            pass
+
+    return fn
+
+
 bot = Client(
     name,
     api_id=bot_config.API_ID,  # type: ignore
     api_hash=bot_config.API_HASH,  # type: ignore
     bot_token=bot_config.BOT_TOKEN,  # type: ignore
+)
+
+getLogger("pyrogram.connection.transport.tcp.tcp").addHandler(
+    MyNullHandler(
+        on_error=reconnect(bot),
+    )
 )
 
 for module in sorted(listdir(modules_dir)):
@@ -77,6 +124,11 @@ async def add_assistants():
                 api_id=bot.api_id,  # type: ignore
                 api_hash=bot.api_hash,
                 session_string=getattr(bot_config, key),
+            )
+            getLogger("pyrogram.connection.transport.tcp.tcp").addHandler(
+                MyNullHandler(
+                    on_error=reconnect(app),
+                )
             )
             calls = PyTgCalls(app)
             calls.add_handler(CallFilters.stream_end, stream_end)
