@@ -155,7 +155,7 @@ def __get_audio_url(out_json: Dict) -> Optional[Tuple[str, str]]:
     return last_audio["url"], container
 
 
-def __get_video_url(out_json: Dict) -> Optional[Tuple[str, str]]:
+def __get_video_url(out_json: Dict) -> Optional[Tuple[str, str, str]]:
     formats = out_json["adaptiveFormats"]
     last_audio = None
     last_video = None
