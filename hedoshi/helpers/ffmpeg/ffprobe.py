@@ -63,8 +63,8 @@ def get_audio_params(path: str) -> AudioParameters:
 
     out_split = res.stdout.decode().split("x")
     return AudioParameters(
-        int(out_split[0]),
-        channels=int(out_split[1]),
+        bitrate=__parse_int(out_split[0]),
+        channels=__parse_int(out_split[1]),
     )
 
 

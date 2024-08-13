@@ -9,7 +9,6 @@
 
 from pyrogram import Client
 from pytgcalls import PyTgCalls, filters as CallFilters
-from pytgcalls.types import Update
 from logging import basicConfig, FATAL, getLogger, INFO, info, error
 from time import sleep
 from os import listdir, mkdir, remove
@@ -80,10 +79,7 @@ async def add_assistants():
                 session_string=getattr(bot_config, key),
             )
             calls = PyTgCalls(app)
-
-            @calls.on_update(CallFilters.stream_end)
-            async def stream_end_wrapper(client: PyTgCalls, update: Update):
-                await stream_end(client, update)
+            calls.add_handler(CallFilters.stream_end, stream_end)
 
             calls.start()
             userbots.append(calls)
