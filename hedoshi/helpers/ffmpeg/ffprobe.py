@@ -64,9 +64,10 @@ def get_resolution(path: str) -> VideoParameters:
     output = res.stdout.decode()
     out_split = output.split("x")
 
-    if len(out_split) >= 3:
+    if len(out_split) > 2:
         rate_split = out_split[2].split("/")
-        rate_parsed = int(int(rate_split[0]) / int(rate_split[1]))
+
+        rate_parsed = __parse_int(rate_split[0]) // __parse_int(rate_split[1])
     else:
         rate_parsed = 20
 
@@ -75,3 +76,14 @@ def get_resolution(path: str) -> VideoParameters:
         height=int(out_split[1]),
         frame_rate=rate_parsed,
     )
+
+def __parse_int(item: str):
+    item = item.strip()
+
+    if not len(item):
+        return 1
+
+    if "\n" in item:
+        return int(item[item.find("\n") + 1 :])
+
+    return int(item)
