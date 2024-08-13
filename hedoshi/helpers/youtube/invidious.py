@@ -114,8 +114,7 @@ async def __youtube2invidious(url: str, audio: bool):
                                 container,
                             )
                         else:
-                            audio_url, _ = __get_audio_url(out_json)
-                            video_url, container = __get_video_url(out_json)
+                            audio_url, video_url, container = __get_video_url(out_json)
 
                             return (
                                 out_json["title"],
@@ -158,11 +157,12 @@ def __get_audio_url(out_json: Dict) -> Optional[Tuple[str, str]]:
 
 def __get_video_url(out_json: Dict) -> Optional[Tuple[str, str]]:
     formats = out_json["adaptiveFormats"]
+    last_audio = None
     last_video = None
 
     for item in formats:
         if "audioQuality" in item:
-            continue
+            last_audio = item
         else:
             last_video = item
 
@@ -172,7 +172,7 @@ def __get_video_url(out_json: Dict) -> Optional[Tuple[str, str]]:
             file_type.find("/") + 1 : file_type.find(";")
         ]
 
-    return last_video["url"], last_video["container"]
+    return last_audio["url"], last_video["url"], last_video["container"]
 
 
 def __get_audio_video_url(out_json: Dict) -> Optional[Tuple[str, str]]:
