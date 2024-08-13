@@ -98,6 +98,10 @@ async def download_media(reply: Message, url: str, audio: bool = False) -> str:
         else False
     )
 
+    use_proxy = (
+        bot_config.BOT_USE_PROXY if hasattr(bot_config, "BOT_USE_PROXY") else False
+    )
+
     if use_invidious and is_valid_invidious_match(url):
         try_count = 0
         while try_count < 10:
@@ -106,10 +110,11 @@ async def download_media(reply: Message, url: str, audio: bool = False) -> str:
                     url,
                     audio,
                     invidious_progress_hook,
+                    get_proxy() if use_proxy else None,
                 )
-                if try_invidious:
-                    return try_invidious
-                try_count = try_count + 1
+
+                assert try_invidious
+                return try_invidious
             except BaseException:
                 try_count = try_count + 1
 
@@ -132,12 +137,6 @@ async def download_media(reply: Message, url: str, audio: bool = False) -> str:
         try_count = 0
         while try_count < 4:
             try:
-                use_proxy = (
-                    bot_config.BOT_USE_PROXY
-                    if hasattr(bot_config, "BOT_USE_PROXY")
-                    else False
-                )
-
                 if use_proxy and try_count < 3:
                     ytdl.cookiejar.clear()
 

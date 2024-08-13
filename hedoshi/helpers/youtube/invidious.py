@@ -193,6 +193,7 @@ async def download_from_invidious(
     url: str,
     audio: bool,
     progress_hook: Callable[[int, int], None],
+    proxy: Optional[str],
 ) -> Optional[str]:
     result = await __youtube2invidious(url, audio)
 
@@ -213,6 +214,7 @@ async def download_from_invidious(
             video_url,
             f"{file_name}",
             progress_hook,
+            proxy,
         )
 
         return video_file
@@ -221,6 +223,7 @@ async def download_from_invidious(
         audio_url,
         f"{file_name}-aud" if video_url else file_name,
         progress_hook,
+        proxy,
     )
 
     if not audio_file:
@@ -231,6 +234,7 @@ async def download_from_invidious(
             video_url,
             f"{file_name}-vid",
             progress_hook,
+            proxy,
         )
 
         if not video_file:
@@ -251,6 +255,7 @@ async def __async_file_download(
     url: str,
     file_name: str,
     progress_hook: Callable[[int, int], None],
+    proxy: Optional[str],
 ) -> Optional[str]:
     try:
         http_headers = {
@@ -265,7 +270,7 @@ async def __async_file_download(
             "Priority": "u=1",
         }
 
-        async with AsyncClient() as http:
+        async with AsyncClient(proxy=proxy) as http:
             output = open(file_name, "wb")
 
             async with http.stream(
