@@ -15,17 +15,17 @@ from ..helpers.telegram.groups import find_active_userbot, join_or_change_stream
 from .. import translator as _
 
 
-@register(cmd='seek|ileriatla')
+@register(cmd="seek|ileriatla|ilerisar")
 async def seek(message: Message):
     await _seek(message, False)
 
 
-@register(cmd='seekback|geriatla')
+@register(cmd="seekback|geriatla|gerisar")
 async def sback(message: Message):
     await _seek(message, True)
 
 
-@register(cmd='seekstart|basaatla')
+@register(cmd="seekstart|basaatla|basasar")
 async def fback(message: Message):
     message.command.insert(1, '99999999')
     await _seek(message, True)
@@ -62,7 +62,7 @@ async def _seek(message: Message, back_mode: bool):
             video_flags=MediaStream.Flags.IGNORE
             if not item.video
             else MediaStream.Flags.AUTO_DETECT,
-            ffmpeg_parameters=f"-ss {skip}",
+            ffmpeg_parameters=f"-ss {skip}" if skip >= 0 else None,
             video_parameters=item.stream._video_parameters,
         )
 

@@ -7,8 +7,10 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from asyncio import get_event_loop
+from asyncio import get_event_loop, run as async_run
 from logging import info
+from typing import Dict
+from pyrogram.types import Message
 from yt_dlp import YoutubeDL
 from yt_dlp.postprocessor.common import PostProcessor
 import yt_dlp.extractor.extractors as ex
@@ -17,6 +19,7 @@ from os import getcwd, sep
 from re import match
 from ..proxy import get_proxy
 from .invidious import download_from_invidious, is_valid_invidious_match
+from ..telegram.downloader import _progress_func_wrapper
 
 yt_valid_ends = [
     '.m3u8'
@@ -68,12 +71,24 @@ def is_valid(url: str):
     return _is_valid_ends(url)
 
 
-async def download_media(url: str, audio: bool = False) -> str:
+async def download_media(reply: Message, url: str, audio: bool = False) -> str:
     if is_in_blacklist(url):
         return None
 
-    globals()['last_percent'] = -1
-    globals()['last_percent_epoch'] = 0
+    async def invidious_progress_hook(current: int, total: int):
+        await _progress_func_wrapper(
+            reply,
+            current,
+            total,
+        )
+
+    def ytdl_progress_hook(progress: Dict):
+        async_run(
+            invidious_progress_hook(
+                progress["downloaded_bytes"],
+                progress["total_bytes"] or 0,
+            )
+        )
 
     from ... import bot_config
 
@@ -87,7 +102,11 @@ async def download_media(url: str, audio: bool = False) -> str:
         try_count = 0
         while try_count < 10:
             try:
-                try_invidious = await download_from_invidious(url, audio)
+                try_invidious = await download_from_invidious(
+                    url,
+                    audio,
+                    invidious_progress_hook,
+                )
                 if try_invidious:
                     return try_invidious
                 try_count = try_count + 1
@@ -95,9 +114,10 @@ async def download_media(url: str, audio: bool = False) -> str:
                 try_count = try_count + 1
 
     opts = {
-        'ignoreerrors': True,
-        'outtmpl': f'{getcwd()}{sep}downloads{sep}%(uploader)s-%(title)s-{"a" if audio else "v"}.%(ext)s',
-        'cachedir': f'{getcwd()}{sep}downloads',
+        "ignoreerrors": True,
+        "outtmpl": f'{getcwd()}{sep}downloads{sep}%(uploader)s-%(title)s-{"a" if audio else "v"}.%(ext)s',
+        "cachedir": f"{getcwd()}{sep}downloads",
+        "progress_hooks": [ytdl_progress_hook],
     }
 
     if audio:

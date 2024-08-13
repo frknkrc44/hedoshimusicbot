@@ -7,14 +7,16 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
+from asyncio import iscoroutinefunction
+from json.decoder import JSONDecodeError
 from httpx import AsyncClient, URL
 from yt_dlp.extractor.lazy_extractors import YoutubeIE
 from os import getcwd, remove, sep
-from os.path import exists
+from os.path import exists, getsize
 from random import shuffle
 from re import match
 from traceback import format_exc
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Callable, List, Optional, Tuple
 from ..ffmpeg.ffmpeg import merge_files
 
 
@@ -37,7 +39,10 @@ async def __get_valid_invidious_mirror(tried_instances: List[str]) -> Optional[s
         _, instance_options = item
         if instance_options.get("api", False) is True:
             uri = instance_options.get("uri")
-            if uri not in tried_instances:
+            playback_stats: float = (
+                instance_options.get("stats").get("playback").get("ratio")
+            )
+            if uri not in tried_instances and playback_stats > 0.2:
                 return uri
 
     return None
@@ -49,7 +54,6 @@ def is_valid_invidious_match(url: str):
 
 async def __youtube2invidious(url: str, audio: bool):
     if is_valid_invidious_match(url):
-        print("Valid match")
         try_count = 0
 
         tried_instances = []
@@ -73,7 +77,12 @@ async def __youtube2invidious(url: str, audio: bool):
             try:
                 async with AsyncClient(timeout=30) as http:
                     req = await http.get(videos_url)
-                    out_json = req.json()
+                    try:
+                        out_json = req.json()
+                    except JSONDecodeError:
+                        # suppress the JSON decode error
+                        continue
+
                     if "error" not in out_json:
                         if audio:
                             audio_url, container = __get_audio_url(out_json)
@@ -176,7 +185,11 @@ def __get_audio_video_url(out_json: Dict) -> Optional[Tuple[str, str]]:
     return None
 
 
-async def download_from_invidious(url: str, audio: bool) -> Optional[str]:
+async def download_from_invidious(
+    url: str,
+    audio: bool,
+    progress_hook: Callable[[int, int], None],
+) -> Optional[str]:
     result = await __youtube2invidious(url, audio)
 
     if result:
@@ -195,6 +208,7 @@ async def download_from_invidious(url: str, audio: bool) -> Optional[str]:
         video_file = await __async_file_download(
             video_url,
             f"{file_name}",
+            progress_hook,
         )
 
         return video_file
@@ -202,6 +216,7 @@ async def download_from_invidious(url: str, audio: bool) -> Optional[str]:
     audio_file = await __async_file_download(
         audio_url,
         f"{file_name}-aud" if video_url else file_name,
+        progress_hook,
     )
 
     if not audio_file:
@@ -211,6 +226,7 @@ async def download_from_invidious(url: str, audio: bool) -> Optional[str]:
         video_file = await __async_file_download(
             video_url,
             f"{file_name}-vid",
+            progress_hook,
         )
 
         if not video_file:
@@ -227,41 +243,66 @@ async def download_from_invidious(url: str, audio: bool) -> Optional[str]:
     return None
 
 
-async def __async_file_download(url: str, file_name: str) -> Optional[str]:
-    http_headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0 Win64 x64 rv:109.0) Gecko/20100101 Firefox/113.0",
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "tr,en-USq=0.7,enq=0.3",
-        "Connection": "keep-alive",
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-site",
-        "Sec-GPC": "1",
-        "Priority": "u=1",
-    }
+async def __async_file_download(
+    url: str,
+    file_name: str,
+    progress_hook: Callable[[int, int], None],
+) -> Optional[str]:
+    try:
+        http_headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0 Win64 x64 rv:109.0) Gecko/20100101 Firefox/113.0",
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "tr,en-USq=0.7,enq=0.3",
+            "Connection": "keep-alive",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-site",
+            "Sec-GPC": "1",
+            "Priority": "u=1",
+        }
 
-    async with AsyncClient() as http:
-        output = open(file_name, "wb")
+        async with AsyncClient() as http:
+            output = open(file_name, "wb")
 
-        async with http.stream(
-            "GET",
-            URL(url),
-            follow_redirects=True,
-            headers=http_headers,
-        ) as stream:
-            print("Status:", stream.status_code)
-            if stream.status_code >= 400:
+            async with http.stream(
+                "GET",
+                URL(url),
+                follow_redirects=True,
+                headers=http_headers,
+            ) as stream:
+                print("Status:", stream.status_code)
+                if stream.status_code >= 400:
+                    output.close()
+
+                    if exists(file_name):
+                        remove(file_name)
+
+                    return None
+
+                total = int(stream.headers.get("Content-Length", 0))
+                async for data in stream.aiter_bytes():
+                    output.write(data)
+
+                    if iscoroutinefunction(progress_hook):
+                        await progress_hook(
+                            stream.num_bytes_downloaded,
+                            total,
+                        )
+                    else:
+                        progress_hook(
+                            stream.num_bytes_downloaded,
+                            total,
+                        )
+
                 output.close()
 
-                if exists(file_name):
-                    remove(file_name)
+                if total != getsize(file_name):
+                    print("Mismatching download size")
 
-                return None
+                print("Download finished!")
+                return file_name
+    except BaseException:
+        print(format_exc())
+        pass
 
-            async for data in stream.aiter_bytes():
-                output.write(data)
-
-            output.close()
-            print("Download finished!")
-
-            return file_name
+    return None

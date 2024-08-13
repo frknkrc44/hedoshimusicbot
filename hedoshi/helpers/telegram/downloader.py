@@ -22,12 +22,13 @@ from ..ffmpeg.ffprobe import get_resolution
 
 async def _progress_func_wrapper(reply: Message, current: int, total: int, upload: bool = False) -> None:
     percent = int((current / total) * 100)
-    last_percent = globals()['last_percent']
-    last_epoch: int = globals()['last_percent_epoch']
+    last_percent = globals().get(f"last_percent_{reply.chat.id}_{reply.id}", -1)
+    last_epoch: int = globals().get(f"last_percent_epoch_{reply.chat.id}_{reply.id}", 0)
     current_epoch = int(time())
     if percent > last_percent and (current_epoch - last_epoch) > 3:
-        globals()['last_percent'] = percent
-        globals()['last_percent_epoch'] = current_epoch
+        globals()[f"last_percent_{reply.chat.id}_{reply.id}"] = percent
+        globals()[f"last_percent_epoch_{reply.chat.id}_{reply.id}"] = current_epoch
+
         try:
             await reply.edit(_.translate_chat('mvUploading' if upload else 'mvDownloading', args=[percent], cid=reply.chat.id))
         except BaseException:
@@ -166,9 +167,6 @@ async def download_tg_media(
     use_userbot: bool = False,
     userbot: Optional[Client] = None,
 ) -> Optional[str]:
-    globals()['last_percent'] = -1
-    globals()['last_percent_epoch'] = 0
-
     async def progress_func(current: int, total: int):
         return await _progress_func_wrapper(reply, current, total)
 
@@ -184,6 +182,9 @@ async def download_tg_media(
                     file_name=get_downloaded_file_name(source, True),
                 )
             )
+
+            del globals()[f"last_percent_{reply.chat.id}_{reply.id}"]
+            del globals()[f"last_percent_epoch_{reply.chat.id}_{reply.id}"]
         else:
             await reply.edit(_.translate_chat('streamDLNoUserbot', cid=reply.chat.id))
             return await download_tg_media(
@@ -200,6 +201,9 @@ async def download_tg_media(
                 file_name=get_downloaded_file_name(source, True),
             )
         )
+
+        del globals()[f"last_percent_{reply.chat.id}_{reply.id}"]
+        del globals()[f"last_percent_epoch_{reply.chat.id}_{reply.id}"]
 
     return path  # type: ignore
 
@@ -218,22 +222,37 @@ async def upload_tg_media(
             userbot = await find_active_userbot_client(reply)
 
         if userbot:
-            return await userbot.send_document(
-                chat_id=reply.chat.id, 
-                document=path, 
-                progress=progress_func, 
+            ret = await userbot.send_document(
+                chat_id=reply.chat.id,
+                document=path,
+                progress=progress_func,
                 reply_to_message_id=reply.id,
             )
+
+            del globals()[f"last_percent_{reply.chat.id}_{reply.id}"]
+            del globals()[f"last_percent_epoch_{reply.chat.id}_{reply.id}"]
+
+            return ret
         else:
             await reply.edit(_.translate_chat('streamDLNoUserbot', cid=reply.chat.id))
-            return await upload_tg_media(
+            ret = await upload_tg_media(
                 reply=reply,
                 path=path,
                 use_userbot=False,
                 userbot=userbot,
             )
+
+            del globals()[f"last_percent_{reply.chat.id}_{reply.id}"]
+            del globals()[f"last_percent_epoch_{reply.chat.id}_{reply.id}"]
+
+            return ret
     else:
-        return await reply.reply_document(path, progress=progress_func)
+        ret = await reply.reply_document(path, progress=progress_func)
+
+        del globals()[f"last_percent_{reply.chat.id}_{reply.id}"]
+        del globals()[f"last_percent_epoch_{reply.chat.id}_{reply.id}"]
+
+        return ret
 
 
 async def download_and_start_tg_media(
