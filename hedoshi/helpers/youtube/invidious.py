@@ -166,6 +166,10 @@ def __get_video_url(out_json: Dict) -> Optional[Tuple[str, str, str]]:
         else:
             last_video = item
 
+            # limit max to 1080p
+            if item.get("resolution") == "1080p" or item.get("qualityLabel") == "1080p":
+                break
+
     if "container" not in last_video:
         file_type: str = last_video["type"]
         last_video["container"] = file_type[

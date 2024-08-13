@@ -123,7 +123,7 @@ async def download_media(reply: Message, url: str, audio: bool = False) -> str:
     if audio:
         opts['format'] = 'm4a' if 'youtube' in url else 'bestaudio/worstvideo/source'
     else:
-        opts["format"] = "bestvideo+bestaudio/best/source"
+        opts["format"] = "bestvideo[height<=1080]+bestaudio/best/source"
 
     filename_collector = FilenameCollectorPP()
     with YoutubeDL(opts) as ytdl:
