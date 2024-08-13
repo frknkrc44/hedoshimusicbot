@@ -9,7 +9,7 @@
 
 from subprocess import run, PIPE
 from typing import Optional
-from pytgcalls.types.raw import VideoParameters
+from pytgcalls.types.raw import AudioParameters, VideoParameters
 
 
 def get_duration(path: str) -> Optional[int]:
@@ -18,7 +18,7 @@ def get_duration(path: str) -> Optional[int]:
             [
                 "ffprobe",
                 "-v",
-                "error",
+                "0",
                 "-show_entries",
                 "format=duration",
                 "-of",
@@ -37,13 +37,44 @@ def get_duration(path: str) -> Optional[int]:
     return int(float(res.stdout.decode()))
 
 
+def get_audio_params(path: str) -> AudioParameters:
+    res = run(
+        " ".join(
+            [
+                "ffprobe",
+                "-v",
+                "0",
+                "-select_streams",
+                "a:0",
+                "-show_entries",
+                "stream=sample_rate,channels",
+                "-of",
+                "compact=p=0:nk=1:s=x",
+                f'"{path}"',
+            ]
+        ),
+        shell=True,
+        stdout=PIPE,
+        stderr=PIPE,
+    )
+
+    if res.returncode > 0:
+        print(res.stderr.decode())
+
+    out_split = res.stdout.decode().split("x")
+    return AudioParameters(
+        int(out_split[0]),
+        channels=int(out_split[1]),
+    )
+
+
 def get_resolution(path: str) -> VideoParameters:
     res = run(
         " ".join(
             [
                 "ffprobe",
                 "-v",
-                "error",
+                "0",
                 "-select_streams",
                 "v",
                 "-show_entries",
@@ -61,8 +92,7 @@ def get_resolution(path: str) -> VideoParameters:
     if res.returncode > 0:
         print(res.stderr.decode())
 
-    output = res.stdout.decode()
-    out_split = output.split("x")
+    out_split = res.stdout.decode().split("x")
 
     if len(out_split) > 2:
         rate_split = out_split[2].split("/")

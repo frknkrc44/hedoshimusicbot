@@ -9,7 +9,7 @@
 
 from asyncio import get_event_loop, run as async_run
 from logging import info
-from typing import Dict
+from typing import Dict, Optional, Tuple
 from pyrogram.types import Message
 from yt_dlp import YoutubeDL
 from yt_dlp.postprocessor.common import PostProcessor
@@ -17,6 +17,7 @@ import yt_dlp.extractor.extractors as ex
 from yt_dlp.extractor.unsupported import KnownDRMIE, KnownPiracyIE
 from os import getcwd, sep
 from re import match
+from traceback import format_exc
 from ..proxy import get_proxy
 from .invidious import download_from_invidious, is_valid_invidious_match
 from ..telegram.downloader import _progress_func_wrapper
@@ -71,7 +72,11 @@ def is_valid(url: str):
     return _is_valid_ends(url)
 
 
-async def download_media(reply: Message, url: str, audio: bool = False) -> str:
+async def download_media(
+    reply: Message,
+    url: str,
+    audio: bool = False,
+) -> Optional[Tuple[str, str]]:
     if is_in_blacklist(url):
         return None
 
@@ -83,10 +88,13 @@ async def download_media(reply: Message, url: str, audio: bool = False) -> str:
         )
 
     def ytdl_progress_hook(progress: Dict):
+        downloaded = progress.get("downloaded_bytes", 0)
+        total = progress.get("total_bytes", max(downloaded, 1))
+
         async_run(
             invidious_progress_hook(
-                progress["downloaded_bytes"],
-                progress["total_bytes"] or 0,
+                downloaded,
+                total or max(downloaded, 1),
             )
         )
 
@@ -106,16 +114,23 @@ async def download_media(reply: Message, url: str, audio: bool = False) -> str:
         try_count = 0
         while try_count < 10:
             try:
+                proxy: Optional[str] = None
+                if use_proxy:
+                    proxy = await get_proxy()
+
                 try_invidious = await download_from_invidious(
                     url,
                     audio,
                     invidious_progress_hook,
-                    get_proxy() if use_proxy else None,
+                    proxy,
                 )
 
-                assert try_invidious
-                return try_invidious
+                if try_invidious:
+                    return try_invidious
+
+                try_count = try_count + 1
             except BaseException:
+                print(format_exc())
                 try_count = try_count + 1
 
     opts = {
@@ -159,5 +174,7 @@ async def download_media(reply: Message, url: str, audio: bool = False) -> str:
             break
 
     return (
-        filename_collector.filenames[-1] if len(filename_collector.filenames) else None
+        (filename_collector.filenames[-1], filename_collector.filenames[-1])
+        if len(filename_collector.filenames)
+        else None,
     )

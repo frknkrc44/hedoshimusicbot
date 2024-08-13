@@ -159,6 +159,7 @@ async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False
             video_flags=MediaStream.Flags.IGNORE
             if not item.video
             else MediaStream.Flags.AUTO_DETECT,
+            audio_parameters=item.stream._audio_parameters,
             video_parameters=item.stream._video_parameters,
         )
     else:

@@ -14,7 +14,7 @@ from yt_dlp.extractor.lazy_extractors import YoutubeIE
 from os import getcwd, remove, sep
 from os.path import exists, getsize
 from random import shuffle
-from re import match
+from re import match, sub
 from traceback import format_exc
 from typing import Dict, Callable, List, Optional, Tuple
 from ..ffmpeg.ffmpeg import merge_files
@@ -41,7 +41,7 @@ async def __get_valid_invidious_mirror(tried_instances: List[str]) -> Optional[s
             uri = instance_options.get("uri")
             playback_stats: float = (
                 instance_options.get("stats").get("playback").get("ratio")
-            )
+            ) or 0
             if uri not in tried_instances and playback_stats > 0.2:
                 return uri
 
@@ -194,7 +194,7 @@ async def download_from_invidious(
     audio: bool,
     progress_hook: Callable[[int, int], None],
     proxy: Optional[str],
-) -> Optional[str]:
+) -> Optional[Tuple[str, str]]:
     result = await __youtube2invidious(url, audio)
 
     if result:
@@ -202,12 +202,12 @@ async def download_from_invidious(
     else:
         return None
 
-    file_name = (
-        f"{getcwd()}{sep}downloads{sep}{author}-{title}-{'a' if audio else 'v'}.{ext}"
-    )
+    file_name_suffix = f"{author}-{title}-{'a' if audio else 'v'}.{ext}"
+    file_name_escaped = sub("[^0-9A-Za-z\.]", "", file_name_suffix)
+    file_name = f"{getcwd()}{sep}downloads{sep}dl-{file_name_escaped}"
 
     if exists(file_name):
-        return file_name
+        return file_name, file_name_suffix
 
     if not audio_url and video_url:
         video_file = await __async_file_download(
@@ -217,7 +217,7 @@ async def download_from_invidious(
             proxy,
         )
 
-        return video_file
+        return video_file, file_name_suffix
 
     audio_file = await __async_file_download(
         audio_url,
@@ -244,9 +244,9 @@ async def download_from_invidious(
             remove(audio_file)
             remove(video_file)
 
-            return file_name
+            return file_name, file_name_suffix
     else:
-        return audio_file
+        return audio_file, file_name_suffix
 
     return None
 

@@ -8,6 +8,7 @@
 #
 
 from pyrogram.types import Message
+from ..helpers.spotify import is_spotify_track
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.downloader import (
     download_tg_media,
@@ -54,12 +55,16 @@ async def download(message: Message):
             elif youtube.is_valid(command):
                 path = await youtube.download_media(msg, command)
                 if path:
-                    return await upload_file_or_send_message(path)
+                    return await upload_file_or_send_message(path[0])
             else:
-                if search := await yt_search.search_query(command):
-                    if youtube.is_valid(search):
-                        path = await youtube.download_media(msg, search)
-                        if path:
-                            return await upload_file_or_send_message(path)
+                if is_spotify_track(command):
+                    search = await yt_search.search_from_spotify_link(command)
+                else:
+                    search = await yt_search.search_query(command)
+
+                if youtube.is_valid(search):
+                    path = await youtube.download_media(msg, search)
+                    if path:
+                        return await upload_file_or_send_message(path[0])
 
     await msg.edit(_.translate_chat('streamNoSrc', cid=message.chat.id))

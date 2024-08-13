@@ -18,7 +18,7 @@ from time import time
 from re import sub
 from .groups import find_active_userbot_client, join_or_change_stream, userbots, get_client
 from ... import translator as _
-from ..ffmpeg.ffprobe import get_resolution
+from ..ffmpeg.ffprobe import get_audio_params, get_resolution
 
 async def _progress_func_wrapper(reply: Message, current: int, total: int, upload: bool = False) -> None:
     percent = int((current / total) * 100)
@@ -280,6 +280,7 @@ async def start_stream(
 ) -> None:
     if path:
         video_params = get_resolution(path) if is_video else None
+        audio_params = get_audio_params(path)
 
         item = await join_or_change_stream(
             reply,
@@ -288,6 +289,7 @@ async def start_stream(
                 video_flags=MediaStream.Flags.IGNORE
                 if not is_video
                 else MediaStream.Flags.AUTO_DETECT,
+                audio_parameters=audio_params,
                 video_parameters=video_params or VideoQuality.SD_480p,
             ),
             file_name,

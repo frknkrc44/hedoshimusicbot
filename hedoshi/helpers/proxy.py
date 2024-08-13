@@ -58,7 +58,7 @@ async def load_working_proxies():
     ]
 
     for url in proxy_dl_urls:
-        if len(working_proxies) > 3:
+        if len(working_proxies) > 2:
             break
 
         info(f"Trying {url}")
@@ -104,11 +104,12 @@ async def load_working_proxies():
                         )
 
                         if req2.status_code < 400:
+                            print(f"Found {item}")
                             working_proxies.append(item)
                 except BaseException:
-                    continue
+                    pass
 
-                if len(working_proxies) > 3:
+                if len(working_proxies) > 2:
                     break
         except BaseException:
             pass
