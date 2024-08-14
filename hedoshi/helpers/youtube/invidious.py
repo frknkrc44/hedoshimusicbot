@@ -313,6 +313,9 @@ async def __async_file_download(
                 print("Download finished!")
                 return file_name
     except BaseException:
+        if exists(file_name):
+            remove(file_name)
+
         print(format_exc())
         pass
 

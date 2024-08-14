@@ -9,8 +9,7 @@
 
 from pyrogram.types import Message
 
-from .. import translator as _
-from ..helpers.format import time_format
+from ..translations import translator as _
 from ..helpers.query import get_queries_by_chat, remove_query_by_chat
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.groups import get_current_duration
@@ -33,13 +32,9 @@ async def lquery(message: Message):
         for i in range(len(query)):
             item = query[i]
             num = show_current_or_number(i)
-            current = f'{time_format(await get_current_duration(message))}/' if i == 0 else ''
-            duration = _.translate_chat(
-                'queryDuration',
-                args=[f'{current}{time_format(item.duration)}'],
-                cid=item.chat_id,
-            )
-            out = out + f"**{num}**\n{query[i].file_name}\n{duration}\n\n"
+            current = await get_current_duration(message) if i == 0 else None
+            details = item.query_details(current_duration=current)
+            out = out + f"**{num}**\n{details}\n\n"
 
     await reply_message(message, out)
 

@@ -13,6 +13,7 @@ from typing import Optional
 from pytgcalls.types import MediaStream
 
 from .format import time_format
+from ..translations import translator as _
 
 
 class QueryItem:
@@ -53,4 +54,17 @@ class QueryItem:
         if current_duration:
             duration = f"{time_format(current_duration)}/{duration}"
 
-        return f"{self.file_name}\n{duration}"
+        return QueryItem.query_details_static(
+            self.chat_id,
+            self.file_name,
+            duration,
+        )
+
+    @staticmethod
+    def query_details_static(chat_id: int, file_name: str, duration: str):
+        duration_text = _.translate_chat(
+            "queryDuration",
+            cid=chat_id,
+            args=[duration],
+        )
+        return f"{file_name}\n{duration_text}"

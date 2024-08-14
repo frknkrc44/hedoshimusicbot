@@ -51,7 +51,7 @@ def register(
     max_args: int = -1,
 ):
     from ... import bot, bot_config
-    from ... import translator as _
+    from ...translations import translator as _
     bot_owner = bot_config.BOT_OWNER
     prefixes = ['/', '\\', '|', '!', '₺']
 

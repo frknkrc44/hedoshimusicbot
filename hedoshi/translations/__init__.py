@@ -100,3 +100,5 @@ class Translator:
             return translation
 
         return translation.format(*args)
+
+translator = Translator()

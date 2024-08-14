@@ -9,7 +9,7 @@
 
 from pyrogram.types import Message
 
-from .. import translator as _
+from ..translations import translator as _
 from ..helpers.query import get_next_query
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.msg_funcs import reply_message

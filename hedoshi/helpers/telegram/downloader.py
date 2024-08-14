@@ -18,8 +18,10 @@ from pyrogram.enums import MessageMediaType
 from pyrogram.types import Message
 from pytgcalls.types import MediaStream, VideoQuality
 
-from ... import translator as _
-from ..ffmpeg.ffprobe import get_audio_params, get_resolution
+from ...translations import translator as _
+from ..format import time_format
+from ..ffmpeg.ffprobe import get_audio_params, get_duration, get_resolution
+from ..query_item import QueryItem
 from .groups import (find_active_userbot_client, get_client,
                      join_or_change_stream, userbots)
 
@@ -299,11 +301,24 @@ async def start_stream(
             file_name,
             video=is_video,
         )
-        if item:
-            await reply.edit(_.translate_chat('streamQueryAdded', cid=reply.chat.id))
-        else:
-            await reply.edit(_.translate_chat('streamStarted', cid=reply.chat.id))
-        return
+
+        arg: Optional[str] = None
+        try:
+            arg = QueryItem.query_details_static(
+                reply.chat.id,
+                file_name,
+                time_format(get_duration(path)),
+            )
+        except BaseException:
+            pass
+
+        await reply.edit(
+            _.translate_chat(
+                "streamQueryAdded" if item else "streamStarted",
+                cid=reply.chat.id,
+                args=[arg],
+            ),
+        )
     else:
         await reply.edit(_.translate_chat('streamTGError', cid=reply.chat.id))
         return

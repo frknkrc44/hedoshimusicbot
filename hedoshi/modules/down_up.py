@@ -11,7 +11,7 @@ from os.path import basename
 
 from pyrogram.types import Message
 
-from .. import translator as _
+from ..translations import translator as _
 from ..helpers.spotify import is_spotify_track
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.downloader import (download_tg_media,

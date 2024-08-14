@@ -22,8 +22,6 @@ from pytgcalls import PyTgCalls
 from pytgcalls import filters as CallFilters
 
 from .helpers import userbots
-from .helpers.telegram.groups import stream_end
-from .translations import Translator
 
 basicConfig(level=INFO)
 getLogger("httpx").setLevel(FATAL)
@@ -50,7 +48,6 @@ class MyNullHandler(NullHandler):
 name = __name__
 bot_config = __import__(f"{__name__}.bot_config").bot_config
 max_userbots = int(getattr(bot_config, "MAX_ASSISTANT_COUNT", 4))
-translator = Translator()
 modules_dir = f"{__name__}{sep}modules"
 
 if not exists("downloads"):
@@ -127,6 +124,9 @@ async def add_assistants():
                 )
             )
             calls = PyTgCalls(app)
+
+            from .helpers.telegram.groups import stream_end
+
             calls.add_handler(CallFilters.stream_end, stream_end)
 
             calls.start()

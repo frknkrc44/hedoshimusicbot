@@ -10,7 +10,7 @@
 from pyrogram.types import Message
 from pytgcalls.types import MediaStream
 
-from .. import translator as _
+from ..translations import translator as _
 from ..helpers.query import QueryItem, get_next_query, replace_query
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.groups import (find_active_userbot,
@@ -45,6 +45,9 @@ async def _seek(message: Message, back_mode: bool):
 
         item = get_next_query(message.chat.id)
         if not item:
+            await reply_message(
+                message, _.translate_chat("queryEmpty", cid=message.chat.id)
+            )
             return
 
         msg = await reply_message(

@@ -19,6 +19,7 @@ from ..ffmpeg.ffprobe import get_duration
 from ..query import get_next_query, query
 from ..query_item import QueryItem
 from .msg_funcs import reply_message
+from ...translations import translator as _
 
 
 async def is_member_alive(chat: Chat, user: User) -> bool:
@@ -36,8 +37,6 @@ async def join_or_change_stream(
     action: int = 0,
     video: bool = False,
 ) -> Optional[QueryItem]:
-    from ... import translator as _
-
     def tr(key: str) -> str:
         return _.translate_chat(key, cid=message.chat.id)
 
@@ -72,13 +71,16 @@ async def join_or_change_stream(
             file_name,
             video=video,
         )
-        query.append(item)
 
         try:
-            assert await is_active(message.chat.id, calls)
+            assert is_active(message.chat.id)
+            query.append(item)
+
             return item
         except BaseException:
             pass
+
+        query.append(item)
 
     try:
         await calls.play(
@@ -108,8 +110,8 @@ async def find_active_userbot(message: Message) -> Optional[PyTgCalls]:
 
     return None
 
-async def is_active(group_id: int, calls: PyTgCalls) -> bool:
-    return await calls.played_time(group_id)
+def is_active(group_id: int) -> bool:
+    return get_next_query(group_id) is not None
 
 def get_client(calls: PyTgCalls) -> Client:
     return calls._mtproto
@@ -170,15 +172,16 @@ async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False
         get_next_query(update.chat_id, True)
         item = get_next_query(update.chat_id)
 
-    from ... import bot, translator
+    from ... import bot
 
     if item:
         msg = await bot.send_message(
             update.chat_id,
-            text=translator.translate_chat(
-                'streamLoop' if item.loop and not force_skip else 'streamNext',
+            text=_.translate_chat(
+                "streamLoop" if item.loop and not force_skip else "streamNext",
                 cid=update.chat_id,
-            )
+                args=[item.query_details()],
+            ),
         )
         await join_or_change_stream(
             msg,
@@ -195,7 +198,5 @@ async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False
         pass
 
     await bot.send_message(
-        update.chat_id,
-        text=translator.translate_chat(
-            'streamEnd', cid=update.chat_id)
+        update.chat_id, text=_.translate_chat("streamEnd", cid=update.chat_id)
     )

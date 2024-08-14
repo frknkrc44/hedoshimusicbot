@@ -7,10 +7,12 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
+from traceback import format_exc
+
 from pyrogram.types import Message
 from pytgcalls.types import StreamAudioEnded
 
-from .. import translator as _
+from ..translations import translator as _
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.groups import (find_active_userbot, is_active,
                                        stream_end)
@@ -22,10 +24,11 @@ async def skip(message: Message):
     userbot = await find_active_userbot(message)
     if userbot:
         try:
-            assert await is_active(message.chat.id, userbot)
+            assert is_active(message.chat.id)
             await stream_end(userbot, update=StreamAudioEnded(message.chat.id), force_skip=True)
             return
         except BaseException:
+            print(format_exc())
             pass
 
     await reply_message(message, _.translate_chat("queryEmpty", cid=message.chat.id))
