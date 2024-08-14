@@ -176,5 +176,5 @@ async def download_media(
     return (
         (filename_collector.filenames[-1], filename_collector.filenames[-1])
         if len(filename_collector.filenames)
-        else None,
+        else None
     )
