@@ -96,6 +96,9 @@ async def __youtube2invidious(url: str, audio: bool):
         tried_instances = []
         while try_count < 10:
             mirror = await __get_valid_invidious_mirror(tried_instances)
+            if not mirror:
+                continue
+
             tried_instances.append(mirror)
 
             print("Selected invidious instance:", mirror)
