@@ -50,6 +50,41 @@ async def __get_valid_invidious_mirror(tried_instances: List[str]) -> Optional[s
     return None
 
 
+async def search_invidious(query: str) -> str:
+    try_count = 0
+
+    tried_instances = []
+    while try_count < 10:
+        mirror = await __get_valid_invidious_mirror(tried_instances)
+        tried_instances.append(mirror)
+
+        print("Selected invidious instance:", mirror)
+
+        search_url = f"{mirror}/api/v1/search?q={query}"
+
+        try:
+            async with AsyncClient(timeout=30) as http:
+                req = await http.get(search_url)
+                try:
+                    out_json = req.json()
+                except JSONDecodeError:
+                    # suppress the JSON decode error
+                    continue
+
+                if type(out_json) is list:
+                    for item in out_json:
+                        if item.get("type") == "video":
+                            return (
+                                f'https://www.youtube.com/watch?v={item.get("videoId")}'
+                            )
+
+                try_count = try_count + 1
+        except BaseException:
+            try_count = try_count + 1
+
+    return None
+
+
 def is_valid_invidious_match(url: str):
     return match(YoutubeIE._VALID_URL, url)
 

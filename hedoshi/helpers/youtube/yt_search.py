@@ -14,6 +14,7 @@ from urllib.parse import quote_plus
 
 from httpx import AsyncClient
 
+from .invidious import search_invidious
 from ..spotify import spotify_get_track_info
 
 
@@ -28,6 +29,19 @@ async def search_query(query: str) -> Optional[str]:
 
     if not query or not len(query):
         return None
+
+    from ... import bot_config
+
+    use_invidious = (
+        bot_config.BOT_USE_INVIDIOUS
+        if hasattr(bot_config, "BOT_USE_INVIDIOUS")
+        else False
+    )
+
+    if use_invidious:
+        result = await search_invidious(query)
+        if result:
+            return result
 
     url = f'https://www.youtube.com/results?search_query={quote_plus(query)}'
 
