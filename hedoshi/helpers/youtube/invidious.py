@@ -259,6 +259,12 @@ async def __async_file_download(
     progress_hook: Callable[[int, int], None],
     proxy: Optional[str],
 ) -> Optional[str]:
+    if not url:
+        return None
+
+    if url and not url.startswith("http"):
+        return None
+
     try:
         http_headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0 Win64 x64 rv:109.0) Gecko/20100101 Firefox/113.0",
