@@ -13,6 +13,8 @@ from os import getcwd, listdir, sep
 from os.path import isfile
 from typing import List, Optional
 
+from ..bot_config import values
+
 
 class Translator:
     def __init__(
@@ -30,7 +32,7 @@ class Translator:
         self.sorter_lang_keys = [i[:-5] for i in jsons]
 
         if not sorter:
-            self.default_lang = "tr"
+            self.default_lang = values.get("BOT_DEFAULT_LANGUAGE", "tr")
             self.trans_cache = {}
 
             for file in jsons:
@@ -41,6 +43,9 @@ class Translator:
                         info(f"Loaded {lang_key}!")
                     except BaseException as e:
                         info(f"Cannot load {lang_key}!\n{e}")
+
+            if self.default_lang not in self.trans_cache:
+                self.default_lang = "tr"
 
     def translate_bool(self, bool: bool, lang: Optional[str] = None) -> Optional[str]:
         return self._translate('helpYes' if bool else 'helpNo', lang=lang)
