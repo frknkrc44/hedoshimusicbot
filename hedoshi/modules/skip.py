@@ -17,7 +17,7 @@ from ..helpers.telegram.groups import (find_active_userbot, is_active,
 from ..helpers.telegram.msg_funcs import reply_message
 
 
-@register(cmd='skip|next|sonraki')
+@register(cmd="skip|next|atla|sonraki")
 async def skip(message: Message):
     userbot = await find_active_userbot(message)
     if userbot:
