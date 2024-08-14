@@ -73,7 +73,7 @@ async def join_or_change_stream(
         )
 
         try:
-            assert is_active(message.chat.id)
+            assert await is_active(message.chat.id, calls)
             query.append(item)
 
             return item
@@ -110,8 +110,11 @@ async def find_active_userbot(message: Message) -> Optional[PyTgCalls]:
 
     return None
 
-def is_active(group_id: int) -> bool:
-    return get_next_query(group_id) is not None
+async def is_active(group_id: int, calls: PyTgCalls) -> bool:
+    try:
+        return await calls.played_time(group_id)
+    except BaseException:
+        return get_next_query(group_id) is not None
 
 def get_client(calls: PyTgCalls) -> Client:
     return calls._mtproto

@@ -24,7 +24,7 @@ async def skip(message: Message):
     userbot = await find_active_userbot(message)
     if userbot:
         try:
-            assert is_active(message.chat.id)
+            assert await is_active(message.chat.id, userbot)
             await stream_end(userbot, update=StreamAudioEnded(message.chat.id), force_skip=True)
             return
         except BaseException:
