@@ -11,7 +11,7 @@ from pyrogram.types import Message
 
 from .. import translator as _
 from ..helpers.format import time_format
-from ..helpers.query import get_queries_by_chat
+from ..helpers.query import get_queries_by_chat, remove_query_by_chat
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.groups import get_current_duration
 from ..helpers.telegram.msg_funcs import reply_message
@@ -43,8 +43,22 @@ async def lquery(message: Message):
 
     await reply_message(message, out)
 
-'''
-@register(cmd='qdel|ssil')
+@register(
+    cmd="qdel|ssil",
+    min_args=1,
+)
 async def dquery(message: Message):
-    pass
-'''
+    try:
+        idx = int(message.command[1])
+    except BaseException:
+        pass
+    else:
+        result = remove_query_by_chat(message.chat.id, idx)
+
+        await reply_message(
+            message,
+            _.translate_chat(
+                "queryDelSuccess" if result else "queryDelFail",
+                cid=message.chat.id,
+            ),
+        )

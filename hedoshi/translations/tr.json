@@ -29,6 +29,8 @@
     "queryCurrent": "Şu anda oynatılan",
     "queryNum": "{}. sırada",
     "queryDuration": "Süre: {}",
+    "queryDelSuccess": "Öğe silindi",
+    "queryDelFail": "Öğe silinemedi",
     "loopOn": "Şu anda oynatılan içerik tekrarlanacak",
     "loopOff": "Şu anda oynatılan içerik tekrarlanmayacak",
     "streamLoop": "Akış tekrarlanıyor",

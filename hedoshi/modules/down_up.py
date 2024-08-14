@@ -25,7 +25,9 @@ from ..helpers.youtube import ytdl_wrapper as youtube
 
 @register(cmd='down|udown|indir|uindir')
 async def download(message: Message):
-    msg = await reply_message(_.translate_chat("mvProcessing", cid=message.chat.id))
+    msg = await reply_message(
+        message, _.translate_chat("mvProcessing", cid=message.chat.id)
+    )
     upload_mode = message.command[0].startswith('u')
 
     async def upload_file_or_send_message(path: str) -> None:

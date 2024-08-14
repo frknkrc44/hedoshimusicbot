@@ -64,6 +64,26 @@ def get_queries_by_chat(chat_id: int) -> List[QueryItem]:
     return new_list
 
 
+def remove_query_by_chat(chat_id: int, index: int) -> bool:
+    current_index = -1
+    remove_index = -1
+
+    for item in query:
+        if item.chat_id == chat_id:
+            current_index = current_index + 1
+
+        if current_index < 1:
+            continue
+
+        if current_index == index:
+            remove_index = query.index(item)
+
+    if remove_index < 0:
+        return False
+
+    return query.pop_item(remove_index)
+
+
 def get_next_query(chat_id: int, delete: bool = False) -> Optional[QueryItem]:
     if not len(query):
         return None
