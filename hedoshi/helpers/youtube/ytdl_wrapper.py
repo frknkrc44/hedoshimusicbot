@@ -16,6 +16,7 @@ from yt_dlp.postprocessor.common import PostProcessor
 import yt_dlp.extractor.extractors as ex
 from yt_dlp.extractor.unsupported import KnownDRMIE, KnownPiracyIE
 from os import getcwd, sep
+from os.path import basename
 from re import match
 from traceback import format_exc
 from ..proxy import get_proxy
@@ -174,7 +175,7 @@ async def download_media(
             break
 
     return (
-        (filename_collector.filenames[-1], filename_collector.filenames[-1])
+        (filename_collector.filenames[-1], basename(filename_collector.filenames[-1]))
         if len(filename_collector.filenames)
         else None
     )
