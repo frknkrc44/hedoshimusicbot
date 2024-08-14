@@ -9,14 +9,16 @@
 
 from asyncio import iscoroutinefunction
 from json.decoder import JSONDecodeError
-from httpx import AsyncClient, URL
-from yt_dlp.extractor.lazy_extractors import YoutubeIE
 from os import getcwd, remove, sep
 from os.path import exists, getsize
 from random import shuffle
 from re import match, sub
 from traceback import format_exc
-from typing import Dict, Callable, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
+
+from httpx import URL, AsyncClient
+from yt_dlp.extractor.lazy_extractors import YoutubeIE
+
 from ..ffmpeg.ffmpeg import merge_files
 
 

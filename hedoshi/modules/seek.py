@@ -9,10 +9,13 @@
 
 from pyrogram.types import Message
 from pytgcalls.types import MediaStream
-from ..helpers.telegram.cmd_register import register
-from ..helpers.query import get_next_query, replace_query, QueryItem
-from ..helpers.telegram.groups import find_active_userbot, join_or_change_stream
+
 from .. import translator as _
+from ..helpers.query import QueryItem, get_next_query, replace_query
+from ..helpers.telegram.cmd_register import register
+from ..helpers.telegram.groups import (find_active_userbot,
+                                       join_or_change_stream)
+from ..helpers.telegram.msg_funcs import edit_message, reply_message
 
 
 @register(cmd="seek|ileriatla|ilerisar")
@@ -44,8 +47,12 @@ async def _seek(message: Message, back_mode: bool):
         if not item:
             return
 
-        msg = await message.reply(_.translate_chat(
-            'streamBackSeeking' if back_mode else 'streamSeeking', cid=item.chat_id))
+        msg = await reply_message(
+            message,
+            _.translate_chat(
+                "streamBackSeeking" if back_mode else "streamSeeking", cid=item.chat_id
+            ),
+        )
         played = await userbot.played_time(item.chat_id)
 
         if back_mode:
@@ -85,5 +92,9 @@ async def _seek(message: Message, back_mode: bool):
             file_name=item.file_name,
             action=1,
         )
-        await msg.edit(_.translate_chat(
-            'streamBackSeeked' if back_mode else 'streamSeeked', cid=item.chat_id))
+        await edit_message(
+            msg,
+            _.translate_chat(
+                "streamBackSeeked" if back_mode else "streamSeeked", cid=item.chat_id
+            ),
+        )

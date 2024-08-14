@@ -9,9 +9,12 @@
 
 from logging import info
 from os import remove as remove_file
-from os.path import exists as exists_file, basename
+from os.path import basename
+from os.path import exists as exists_file
 from typing import List, Optional
+
 from .query_item import QueryItem
+
 
 class QueryList(List[QueryItem]):
     def media_in_use(self, value: QueryItem) -> bool:

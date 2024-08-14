@@ -7,8 +7,9 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from dotenv import dotenv_values
 from logging import error
+
+from dotenv import dotenv_values
 
 working_proxies = []
 

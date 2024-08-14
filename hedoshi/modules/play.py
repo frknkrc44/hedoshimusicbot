@@ -8,13 +8,18 @@
 #
 
 from pyrogram.types import Message
-from ..helpers.telegram.cmd_register import register
-from ..helpers.telegram.downloader import (download_and_start_tg_media, start_stream,
-                                           parse_telegram_url, parse_telegram_url_and_stream)
-from ..helpers.telegram.groups import find_active_userbot, add_userbot
-from ..helpers.youtube import ytdl_wrapper as youtube, yt_search
-from ..helpers.spotify import is_spotify_track
+
 from .. import translator as _
+from ..helpers.spotify import is_spotify_track
+from ..helpers.telegram.cmd_register import register
+from ..helpers.telegram.downloader import (download_and_start_tg_media,
+                                           parse_telegram_url,
+                                           parse_telegram_url_and_stream,
+                                           start_stream)
+from ..helpers.telegram.groups import add_userbot, find_active_userbot
+from ..helpers.telegram.msg_funcs import edit_message, reply_message
+from ..helpers.youtube import yt_search
+from ..helpers.youtube import ytdl_wrapper as youtube
 
 
 @register(
@@ -22,17 +27,21 @@ from .. import translator as _
     bot_admin=True,
 )
 async def play(message: Message):
-    msg = await message.reply_text(_.translate_chat('mvProcessing', cid=message.chat.id))
+    msg = await reply_message(
+        message, _.translate_chat("mvProcessing", cid=message.chat.id)
+    )
     video_mode = message.command[0].startswith('v')
 
     calls = await find_active_userbot(message)
     if not calls:
-        await msg.edit(_.translate_chat("astJoining", cid=message.chat.id))
+        await edit_message(msg, _.translate_chat("astJoining", cid=message.chat.id))
         try:
             added = await add_userbot(message)
             assert added
         except BaseException:
-            await msg.edit(_.translate_chat("astJoinFail", cid=message.chat.id))
+            await edit_message(
+                msg, _.translate_chat("astJoinFail", cid=message.chat.id)
+            )
             return
 
     if message.reply_to_message:
@@ -67,4 +76,4 @@ async def play(message: Message):
                         await start_stream(msg, path[0], video_mode, path[1])
                         return
 
-    await msg.edit(_.translate_chat('streamNoSrc', cid=message.chat.id))
+    await edit_message(msg, _.translate_chat("streamNoSrc", cid=message.chat.id))

@@ -7,8 +7,8 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from pyrogram import Client
 from dotenv import dotenv_values
+from pyrogram import Client
 
 values = dotenv_values('config.env')
 

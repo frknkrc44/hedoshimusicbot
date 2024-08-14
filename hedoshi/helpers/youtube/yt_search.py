@@ -7,11 +7,13 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from httpx import AsyncClient
+from json import loads
+from time import sleep
 from typing import Optional, Tuple
 from urllib.parse import quote_plus
-from time import sleep
-from json import loads
+
+from httpx import AsyncClient
+
 from ..spotify import spotify_get_track_info
 
 

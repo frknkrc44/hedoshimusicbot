@@ -7,14 +7,17 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from pyrogram.types import Message
-from ..helpers.telegram.cmd_register import register
 from time import time
+
+from pyrogram.types import Message
+
+from ..helpers.telegram.cmd_register import register
+from ..helpers.telegram.msg_funcs import edit_message, reply_message
 
 
 @register('ping|check|denetle', private=True)
 async def ping(message: Message) -> None:
     start = time()
-    msg = await message.reply_text('Pong!')
+    msg = await reply_message(message, "Pong!")
     delta = time() - start
-    await msg.edit(f'Pong! - {delta*1000:.0f}ms')
+    await edit_message(msg, f"Pong! - {delta*1000:.0f}ms")

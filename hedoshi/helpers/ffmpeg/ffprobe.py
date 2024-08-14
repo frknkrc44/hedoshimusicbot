@@ -7,8 +7,9 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from subprocess import run, PIPE
+from subprocess import PIPE, run
 from typing import Optional
+
 from pytgcalls.types.raw import AudioParameters, VideoParameters
 
 

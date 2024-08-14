@@ -7,10 +7,13 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from pytgcalls.types import MediaStream
 from json import dumps
 from typing import Optional
+
+from pytgcalls.types import MediaStream
+
 from .format import time_format
+
 
 class QueryItem:
     def __init__(

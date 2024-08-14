@@ -8,9 +8,11 @@
 #
 
 from pyrogram.types import Message
+
+from .. import translator as _
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.groups import find_active_userbot
-from .. import translator as _
+from ..helpers.telegram.msg_funcs import reply_message
 
 
 @register(cmd='resume|devam')
@@ -19,7 +21,9 @@ async def play(message: Message):
     if userbot:
         try:
             await userbot.resume_stream(message.chat.id)
-            await message.reply(_.translate_chat('streamResumed', cid=message.chat.id))
+            await reply_message(
+                message, _.translate_chat("streamResumed", cid=message.chat.id)
+            )
         except BaseException:
             pass
 
@@ -30,6 +34,8 @@ async def pause(message: Message):
     if userbot:
         try:
             await userbot.pause_stream(message.chat.id)
-            await message.reply(_.translate_chat('streamPaused', cid=message.chat.id))
+            await reply_message(
+                message, _.translate_chat("streamPaused", cid=message.chat.id)
+            )
         except BaseException:
             pass

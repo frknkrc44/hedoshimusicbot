@@ -8,14 +8,18 @@
 #
 
 from typing import Optional
+
 from pyrogram import Client
-from pyrogram.types import Message, User, Chat
+from pyrogram.types import Chat, Message, User
 from pytgcalls import PyTgCalls
 from pytgcalls.types import MediaStream, StreamAudioEnded, Update
-from ..ffmpeg.ffprobe import get_duration
+
 from .. import userbots
-from ..query import query, get_next_query
+from ..ffmpeg.ffprobe import get_duration
+from ..query import get_next_query, query
 from ..query_item import QueryItem
+from .msg_funcs import reply_message
+
 
 async def is_member_alive(chat: Chat, user: User) -> bool:
     try:
@@ -39,7 +43,7 @@ async def join_or_change_stream(
 
     calls = await find_active_userbot(message)
     if not calls:
-        locals()['msg'] = await message.reply(tr('astJoining'))
+        locals()["msg"] = await reply_message(message, tr("astJoining"))
         try:
             added = await add_userbot(message)
             assert added
@@ -55,7 +59,7 @@ async def join_or_change_stream(
         seconds = get_duration(stream._media_path)
         if not seconds:
             if 'msg' not in locals():
-                await message.reply(tr('astDurationFail'))
+                await reply_message(message, tr("astDurationFail"))
             else:
                 await locals()['msg'].edit(tr('astDurationFail'))
             return None
@@ -83,7 +87,7 @@ async def join_or_change_stream(
         )
     except BaseException as e:
         if 'msg' not in locals():
-            await message.reply(tr('astPlayFail'))
+            await reply_message(message, tr("astPlayFail"))
         else:
             await locals()['msg'].edit(tr('astPlayFail'))
         raise e

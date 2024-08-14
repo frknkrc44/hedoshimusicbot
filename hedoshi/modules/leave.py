@@ -8,10 +8,12 @@
 #
 
 from pyrogram.types import Message
+
+from .. import translator as _
+from ..helpers.query import clear_query
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.groups import find_active_userbot
-from ..helpers.query import clear_query
-from .. import translator as _
+from ..helpers.telegram.msg_funcs import reply_message
 
 
 @register(cmd="leave|ayril|end|son|bitir")
@@ -24,6 +26,6 @@ async def leave_call(message: Message):
         except BaseException:
             pass
 
-    await message.reply(
-        text=_.translate_chat('streamEnd', cid=message.chat.id)
+    await reply_message(
+        message, text=_.translate_chat("streamEnd", cid=message.chat.id)
     )

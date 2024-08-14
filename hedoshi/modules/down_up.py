@@ -7,32 +7,42 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
+from os.path import basename
+
 from pyrogram.types import Message
+
+from .. import translator as _
 from ..helpers.spotify import is_spotify_track
 from ..helpers.telegram.cmd_register import register
-from ..helpers.telegram.downloader import (
-    download_tg_media,
-    parse_telegram_url_and_download,
-    parse_telegram_url,
-    upload_tg_media,
-)
-from ..helpers.youtube import ytdl_wrapper as youtube, yt_search
-from .. import translator as _
-from os.path import basename
+from ..helpers.telegram.downloader import (download_tg_media,
+                                           parse_telegram_url,
+                                           parse_telegram_url_and_download,
+                                           upload_tg_media)
+from ..helpers.telegram.msg_funcs import edit_message, reply_message
+from ..helpers.youtube import yt_search
+from ..helpers.youtube import ytdl_wrapper as youtube
 
 
 @register(cmd='down|udown|indir|uindir')
 async def download(message: Message):
-    msg = await message.reply_text(_.translate_chat('mvProcessing', cid=message.chat.id))
+    msg = await reply_message(_.translate_chat("mvProcessing", cid=message.chat.id))
     upload_mode = message.command[0].startswith('u')
 
     async def upload_file_or_send_message(path: str) -> None:
         upload_path = f'downloads/{basename(path)}'
         if upload_mode:
             await upload_tg_media(msg, path)
-            await msg.edit(_.translate_chat('mvUploaded', cid=message.chat.id, args=[upload_path]))
+            await edit_message(
+                msg,
+                _.translate_chat("mvUploaded", cid=message.chat.id, args=[upload_path]),
+            )
         else:
-            await msg.edit(_.translate_chat('mvDownloaded', cid=message.chat.id, args=[upload_path]))
+            await edit_message(
+                msg,
+                _.translate_chat(
+                    "mvDownloaded", cid=message.chat.id, args=[upload_path]
+                ),
+            )
 
     if message.reply_to_message:
         reply = message.reply_to_message
@@ -67,4 +77,4 @@ async def download(message: Message):
                     if path:
                         return await upload_file_or_send_message(path[0])
 
-    await msg.edit(_.translate_chat('streamNoSrc', cid=message.chat.id))
+    await edit_message(msg, _.translate_chat("streamNoSrc", cid=message.chat.id))

@@ -7,9 +7,10 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from httpx import AsyncClient
 from logging import info
 from random import shuffle
+
+from httpx import AsyncClient
 
 
 async def get_proxy() -> str:

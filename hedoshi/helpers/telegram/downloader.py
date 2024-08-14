@@ -9,16 +9,20 @@
 
 from os import sep
 from os.path import exists
+from re import sub
+from time import time
 from typing import Optional, Tuple
+
 from pyrogram import Client
 from pyrogram.enums import MessageMediaType
 from pyrogram.types import Message
 from pytgcalls.types import MediaStream, VideoQuality
-from time import time
-from re import sub
-from .groups import find_active_userbot_client, join_or_change_stream, userbots, get_client
+
 from ... import translator as _
 from ..ffmpeg.ffprobe import get_audio_params, get_resolution
+from .groups import (find_active_userbot_client, get_client,
+                     join_or_change_stream, userbots)
+
 
 async def _progress_func_wrapper(reply: Message, current: int, total: int, upload: bool = False) -> None:
     percent = int((current / total) * 100)

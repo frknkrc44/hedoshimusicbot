@@ -7,9 +7,10 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from httpx import AsyncClient
 from re import match
 from typing import Optional, Tuple
+
+from httpx import AsyncClient
 
 
 def is_spotify_track(url: str):

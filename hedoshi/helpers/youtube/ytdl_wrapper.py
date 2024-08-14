@@ -7,21 +7,24 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from asyncio import get_event_loop, run as async_run
+from asyncio import get_event_loop
+from asyncio import run as async_run
 from logging import info
-from typing import Dict, Optional, Tuple
-from pyrogram.types import Message
-from yt_dlp import YoutubeDL
-from yt_dlp.postprocessor.common import PostProcessor
-import yt_dlp.extractor.extractors as ex
-from yt_dlp.extractor.unsupported import KnownDRMIE, KnownPiracyIE
 from os import getcwd, sep
 from os.path import basename
 from re import match
 from traceback import format_exc
+from typing import Dict, Optional, Tuple
+
+import yt_dlp.extractor.extractors as ex
+from pyrogram.types import Message
+from yt_dlp import YoutubeDL
+from yt_dlp.extractor.unsupported import KnownDRMIE, KnownPiracyIE
+from yt_dlp.postprocessor.common import PostProcessor
+
 from ..proxy import get_proxy
-from .invidious import download_from_invidious, is_valid_invidious_match
 from ..telegram.downloader import _progress_func_wrapper
+from .invidious import download_from_invidious, is_valid_invidious_match
 
 yt_valid_ends = [
     '.m3u8'

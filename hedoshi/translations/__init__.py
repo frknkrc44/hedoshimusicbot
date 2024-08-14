@@ -7,10 +7,10 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from os import getcwd, listdir, sep
-from os.path import isfile
 from json import loads
 from logging import info
+from os import getcwd, listdir, sep
+from os.path import isfile
 from typing import List, Optional
 
 

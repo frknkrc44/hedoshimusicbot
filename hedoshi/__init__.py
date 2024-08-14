@@ -7,24 +7,20 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from asyncio import iscoroutine, run, sleep as async_sleep
-from pyrogram import Client
-from pytgcalls import PyTgCalls, filters as CallFilters
-from logging import (
-    LogRecord,
-    basicConfig,
-    FATAL,
-    getLogger,
-    INFO,
-    info,
-    error,
-    NullHandler,
-)
-from time import sleep
-from typing import Callable
+from asyncio import iscoroutine, run
+from asyncio import sleep as async_sleep
+from logging import (FATAL, INFO, LogRecord, NullHandler, basicConfig, error,
+                     getLogger, info)
 from os import listdir, mkdir, remove
 from os.path import exists, isfile, sep
+from time import sleep
 from traceback import format_exc
+from typing import Callable
+
+from pyrogram import Client
+from pytgcalls import PyTgCalls
+from pytgcalls import filters as CallFilters
+
 from .helpers import userbots
 from .helpers.telegram.groups import stream_end
 from .translations import Translator

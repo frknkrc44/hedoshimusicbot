@@ -8,11 +8,13 @@
 #
 
 from pyrogram.types import Message
-from ..helpers.telegram.cmd_register import register
-from ..helpers.telegram.groups import get_current_duration
-from ..helpers.query import get_queries_by_chat
+
 from .. import translator as _
 from ..helpers.format import time_format
+from ..helpers.query import get_queries_by_chat
+from ..helpers.telegram.cmd_register import register
+from ..helpers.telegram.groups import get_current_duration
+from ..helpers.telegram.msg_funcs import reply_message
 
 
 @register(cmd='query|sira')
@@ -39,7 +41,7 @@ async def lquery(message: Message):
             )
             out = out + f"**{num}**\n{query[i].file_name}\n{duration}\n\n"
 
-    await message.reply(out)
+    await reply_message(message, out)
 
 '''
 @register(cmd='qdel|ssil')
