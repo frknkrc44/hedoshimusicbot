@@ -303,64 +303,70 @@ async def __async_file_download(
     if url and not url.startswith("http"):
         return None
 
-    try:
-        http_headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0 Win64 x64 rv:109.0) Gecko/20100101 Firefox/113.0",
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "tr,en-USq=0.7,enq=0.3",
-            "Connection": "keep-alive",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-site",
-            "Sec-GPC": "1",
-            "Priority": "u=1",
-        }
+    try_count = 0
+    while try_count < 3:
+        try:
+            http_headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0 Win64 x64 rv:109.0) Gecko/20100101 Firefox/113.0",
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Language": "tr,en-USq=0.7,enq=0.3",
+                "Connection": "keep-alive",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-site",
+                "Sec-GPC": "1",
+                "Priority": "u=1",
+            }
 
-        async with AsyncClient(proxy=proxy) as http:
-            output = open(file_name, "wb")
+            async with AsyncClient(
+                proxy=proxy,
+                timeout=30,
+            ) as http:
+                output = open(file_name, "wb")
 
-            async with http.stream(
-                "GET",
-                URL(url),
-                follow_redirects=True,
-                headers=http_headers,
-            ) as stream:
-                print("Status:", stream.status_code)
-                if stream.status_code >= 400:
+                async with http.stream(
+                    "GET",
+                    URL(url),
+                    follow_redirects=True,
+                    headers=http_headers,
+                ) as stream:
+                    print("Status:", stream.status_code)
+                    if stream.status_code >= 400:
+                        output.close()
+
+                        if exists(file_name):
+                            remove(file_name)
+
+                        return None
+
+                    total = int(stream.headers.get("Content-Length", 0))
+                    async for data in stream.aiter_bytes():
+                        output.write(data)
+
+                        if iscoroutinefunction(progress_hook):
+                            await progress_hook(
+                                stream.num_bytes_downloaded,
+                                total,
+                            )
+                        else:
+                            progress_hook(
+                                stream.num_bytes_downloaded,
+                                total,
+                            )
+
                     output.close()
 
-                    if exists(file_name):
-                        remove(file_name)
+                    if total != getsize(file_name):
+                        print("Mismatching download size")
 
-                    return None
+                    print("Download finished!")
+                    return file_name
+        except BaseException:
+            try_count = try_count + 1
 
-                total = int(stream.headers.get("Content-Length", 0))
-                async for data in stream.aiter_bytes():
-                    output.write(data)
+            if exists(file_name):
+                remove(file_name)
 
-                    if iscoroutinefunction(progress_hook):
-                        await progress_hook(
-                            stream.num_bytes_downloaded,
-                            total,
-                        )
-                    else:
-                        progress_hook(
-                            stream.num_bytes_downloaded,
-                            total,
-                        )
-
-                output.close()
-
-                if total != getsize(file_name):
-                    print("Mismatching download size")
-
-                print("Download finished!")
-                return file_name
-    except BaseException:
-        if exists(file_name):
-            remove(file_name)
-
-        print(format_exc())
-        pass
+            print(format_exc())
 
     return None
