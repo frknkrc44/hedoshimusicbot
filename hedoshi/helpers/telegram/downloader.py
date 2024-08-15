@@ -7,6 +7,7 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
+from mimetypes import guess_extension
 from os import sep
 from os.path import exists
 from re import sub
@@ -128,13 +129,26 @@ def escape_file_name(name: str, id: str):
 def __get_raw_file_name(source: Message):
     match source.media:
         case MessageMediaType.AUDIO:
-            return source.audio.file_name
+            return source.audio.file_name or __get_file_from_id_mimetype(
+                source.audio.file_unique_id,
+                source.audio.mime_type,
+            )
         case MessageMediaType.DOCUMENT:
-            return source.document.file_name
+            return source.document.file_name or __get_file_from_id_mimetype(
+                source.document.file_unique_id,
+                source.document.mime_type,
+            )
         case MessageMediaType.VIDEO:
-            return source.video.file_name
+            return source.video.file_name or __get_file_from_id_mimetype(
+                source.video.file_unique_id,
+                source.video.mime_type,
+            )
 
     return None
+
+
+def __get_file_from_id_mimetype(file_id: str, mime_type: str):
+    return f"{file_id}.{guess_extension(mime_type)}"
 
 
 def get_downloaded_file_name(
@@ -144,22 +158,34 @@ def get_downloaded_file_name(
     match source.media:
         case MessageMediaType.AUDIO:
             escaped_name = escape_file_name(
-                source.audio.file_name,
-                source.audio.file_id,
+                source.audio.file_name
+                or __get_file_from_id_mimetype(
+                    source.audio.file_unique_id,
+                    source.audio.mime_type,
+                ),
+                source.audio.file_unique_id,
             )
             if exists(escaped_name) or force_return:
                 return escaped_name
         case MessageMediaType.DOCUMENT:
             escaped_name = escape_file_name(
-                source.document.file_name,
-                source.document.file_id,
+                source.document.file_name
+                or __get_file_from_id_mimetype(
+                    source.document.file_unique_id,
+                    source.document.mime_type,
+                ),
+                source.document.file_unique_id,
             )
             if exists(escaped_name) or force_return:
                 return escaped_name
         case MessageMediaType.VIDEO:
             escaped_name = escape_file_name(
-                source.video.file_name,
-                source.video.file_id,
+                source.video.file_name
+                or __get_file_from_id_mimetype(
+                    source.video.file_unique_id,
+                    source.video.mime_type,
+                ),
+                source.video.file_unique_id,
             )
             if exists(escaped_name) or force_return:
                 return escaped_name
