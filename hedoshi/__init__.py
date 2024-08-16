@@ -30,17 +30,19 @@ class MyNullHandler(NullHandler):
     def __init__(
         self,
         level: int | str = INFO,
-        on_error: Callable[[], None] = None,
+        signal_text: str = "Connection lost",
+        on_trigger: Callable[[], None] = None,
     ) -> None:
         super().__init__(level)
-        self.on_error = on_error
+        self.signal_text = signal_text
+        self.on_trigger = on_trigger
 
     def handle(self, record: LogRecord) -> bool:
-        if "Connection lost" in record.getMessage():
-            if iscoroutine(self.on_error):
-                run(self.on_error())
+        if self.signal_text in record.getMessage():
+            if iscoroutine(self.on_trigger):
+                run(self.on_trigger())
             else:
-                self.on_error()
+                self.on_trigger()
 
         return super().handle(record)
 
@@ -83,6 +85,10 @@ def reconnect(client: Client):
     return fn
 
 
+def force_quit():
+    quit()
+
+
 bot = Client(
     name,
     api_id=bot_config.API_ID,  # type: ignore
@@ -92,7 +98,15 @@ bot = Client(
 
 getLogger("pyrogram.connection.transport.tcp.tcp").addHandler(
     MyNullHandler(
-        on_error=reconnect(bot),
+        on_trigger=reconnect(bot),
+    )
+)
+
+# Force quit
+getLogger("root").addHandler(
+    MyNullHandler(
+        signal_text="Stop signal received",
+        on_trigger=force_quit,
     )
 )
 
@@ -120,7 +134,7 @@ async def add_assistants():
             )
             getLogger("pyrogram.connection.transport.tcp.tcp").addHandler(
                 MyNullHandler(
-                    on_error=reconnect(app),
+                    on_trigger=reconnect(app),
                 )
             )
             calls = PyTgCalls(app)

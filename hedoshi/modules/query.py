@@ -9,11 +9,11 @@
 
 from pyrogram.types import Message
 
-from ..translations import translator as _
 from ..helpers.query import get_queries_by_chat, remove_query_by_chat
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.groups import get_current_duration
 from ..helpers.telegram.msg_funcs import reply_message
+from ..translations import translator as _
 
 
 @register(cmd='query|sira')

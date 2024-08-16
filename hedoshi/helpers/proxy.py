@@ -30,7 +30,7 @@ async def get_proxy() -> str:
             try:
                 async with AsyncClient(
                     proxy=item,
-                    timeout=0.5,
+                    timeout=1,
                 ) as http:
                     req2 = await http.get(
                         "https://goo.gl",
@@ -58,8 +58,10 @@ async def load_working_proxies():
         "https://raw.githubusercontent.com/ErcinDedeoglu/proxies/main/proxies/https.txt",
     ]
 
+    max_proxies = 2
+
     for url in proxy_dl_urls:
-        if len(working_proxies) > 2:
+        if len(working_proxies) >= max_proxies:
             break
 
         info(f"Trying {url}")
@@ -88,6 +90,9 @@ async def load_working_proxies():
             shuffle(lines)
 
             for item in lines:
+                if len(working_proxies) >= max_proxies:
+                    break
+
                 if not item.startswith("http"):
                     item = f"http://{item}"
 
@@ -109,8 +114,5 @@ async def load_working_proxies():
                             working_proxies.append(item)
                 except BaseException:
                     pass
-
-                if len(working_proxies) > 2:
-                    break
         except BaseException:
             pass

@@ -14,8 +14,8 @@ from urllib.parse import quote_plus
 
 from httpx import AsyncClient
 
-from .invidious import search_invidious
 from ..spotify import spotify_get_track_info
+from .invidious import search_invidious
 
 
 async def search_from_spotify_link(url: str) -> Optional[str]:

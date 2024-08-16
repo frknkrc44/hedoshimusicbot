@@ -1,9 +1,8 @@
 gitpython
 heroku3
-httpx
+httpx[socks]
 https://github.com/PyrogramMod/PyrogramMod/archive/refs/heads/main.zip
 https://github.com/pytgcalls/pytgcalls/archive/refs/heads/master.zip
 python-dotenv
-requests
 tgcrypto
 yt-dlp

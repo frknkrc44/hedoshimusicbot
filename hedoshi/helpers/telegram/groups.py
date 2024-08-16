@@ -14,12 +14,12 @@ from pyrogram.types import Chat, Message, User
 from pytgcalls import PyTgCalls
 from pytgcalls.types import MediaStream, StreamAudioEnded, Update
 
+from ...translations import translator as _
 from .. import userbots
 from ..ffmpeg.ffprobe import get_duration
 from ..query import get_next_query, query
 from ..query_item import QueryItem
 from .msg_funcs import reply_message
-from ...translations import translator as _
 
 
 async def is_member_alive(chat: Chat, user: User) -> bool:

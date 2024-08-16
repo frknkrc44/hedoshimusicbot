@@ -10,12 +10,12 @@
 from pyrogram.types import Message
 from pytgcalls.types import MediaStream
 
-from ..translations import translator as _
 from ..helpers.query import QueryItem, get_next_query, replace_query
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.groups import (find_active_userbot,
                                        join_or_change_stream)
 from ..helpers.telegram.msg_funcs import edit_message, reply_message
+from ..translations import translator as _
 
 
 @register(cmd="seek|ileriatla|ilerisar")

@@ -12,8 +12,8 @@ from typing import Optional
 
 from pytgcalls.types import MediaStream
 
-from .format import time_format
 from ..translations import translator as _
+from .format import time_format
 
 
 class QueryItem:

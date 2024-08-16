@@ -11,7 +11,6 @@ from os.path import basename
 
 from pyrogram.types import Message
 
-from ..translations import translator as _
 from ..helpers.spotify import is_spotify_track
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.downloader import (download_tg_media,
@@ -21,6 +20,7 @@ from ..helpers.telegram.downloader import (download_tg_media,
 from ..helpers.telegram.msg_funcs import edit_message, reply_message
 from ..helpers.youtube import yt_search
 from ..helpers.youtube import ytdl_wrapper as youtube
+from ..translations import translator as _
 
 
 @register(cmd='down|udown|indir|uindir')

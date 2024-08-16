@@ -9,11 +9,11 @@
 
 from pyrogram.types import Message
 
-from ..translations import translator as _
 from ..helpers.query import clear_query
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.groups import find_active_userbot
 from ..helpers.telegram.msg_funcs import reply_message
+from ..translations import translator as _
 
 
 @register(cmd="leave|ayril|end|son|bitir")

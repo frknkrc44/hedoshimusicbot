@@ -20,16 +20,53 @@ import yt_dlp.extractor.extractors as ex
 from pyrogram.types import Message
 from yt_dlp import YoutubeDL
 from yt_dlp.extractor.unsupported import KnownDRMIE, KnownPiracyIE
+from yt_dlp.networking.common import _REQUEST_HANDLERS, register_rh
 from yt_dlp.postprocessor.common import PostProcessor
 
 from ..proxy import get_proxy
 from ..telegram.downloader import _progress_func_wrapper
 from .invidious import download_from_invidious, is_valid_invidious_match
+from .ytdl_httpx_handler import HTTPXRH
 
 yt_valid_ends = [
     '.m3u8'
 ]
 
+def set_httpx_handler():
+    from ... import bot_config
+
+    use_httpx = (
+        bot_config.YTDL_USE_HTTPX if hasattr(bot_config, "YTDL_USE_HTTPX") else False
+    )
+
+    if not use_httpx:
+        return
+
+    try:
+        from yt_dlp.networking._curlcffi import CurlCFFIRH
+
+        del _REQUEST_HANDLERS[CurlCFFIRH.RH_KEY]
+    except BaseException:
+        pass
+
+    try:
+        from yt_dlp.networking._requests import RequestsRH
+
+        del _REQUEST_HANDLERS[RequestsRH.RH_KEY]
+    except BaseException:
+        pass
+
+    try:
+        from yt_dlp.networking._urllib import UrllibRH
+
+        del _REQUEST_HANDLERS[UrllibRH.RH_KEY]
+    except BaseException:
+        pass
+
+    register_rh(HTTPXRH)
+
+
+set_httpx_handler()
 
 class FilenameCollectorPP(PostProcessor):
     # https://stackoverflow.com/a/68165682
@@ -38,7 +75,7 @@ class FilenameCollectorPP(PostProcessor):
         self.filenames = []
 
     def run(self, information):
-        self.filenames.append(information['filepath'])
+        self.filenames.append(information["filepath"])
         return [], information
 
 
@@ -68,7 +105,7 @@ def is_valid(url: str):
 
     for item in ex._ALL_CLASSES:
         try:
-            if hasattr(item, '_VALID_URL') and match(getattr(item, '_VALID_URL'), url):
+            if hasattr(item, "_VALID_URL") and match(getattr(item, "_VALID_URL"), url):
                 return True
         except BaseException:
             pass
@@ -145,11 +182,12 @@ async def download_media(
     }
 
     if audio:
-        opts['format'] = 'm4a' if 'youtube' in url else 'bestaudio/worstvideo/source'
+        opts["format"] = "bestaudio/worst/source"
     else:
         opts["format"] = "bestvideo[height<=1080]+bestaudio/best/source"
 
     filename_collector = FilenameCollectorPP()
+
     with YoutubeDL(opts) as ytdl:
         ytdl.add_post_processor(filename_collector)
 
