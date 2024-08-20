@@ -17,7 +17,7 @@ from pytgcalls.types import MediaStream, StreamAudioEnded, Update
 from ...translations import translator as _
 from .. import userbots
 from ..ffmpeg.ffprobe import get_duration
-from ..query import get_next_query, query
+from ..query import clear_query, get_next_query, query
 from ..query_item import QueryItem
 from .msg_funcs import reply_message
 
@@ -51,6 +51,8 @@ async def join_or_change_stream(
             pass
 
     if not calls:
+        clear_query(message.chat.id)
+
         await locals()['msg'].edit(tr('astJoinFail'))
         return None
 
@@ -88,6 +90,8 @@ async def join_or_change_stream(
             stream,
         )
     except BaseException as e:
+        clear_query(message.chat.id)
+
         if 'msg' not in locals():
             await reply_message(message, tr("astPlayFail"))
         else:
