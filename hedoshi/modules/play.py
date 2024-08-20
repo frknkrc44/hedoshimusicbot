@@ -58,9 +58,13 @@ async def play(message: Message):
         if len(message.command) > 1:
             command = ' '.join(message.command[1:])
             if parse_telegram_url(command)[0]:  # type: ignore
-                return await parse_telegram_url_and_stream(msg, command, video_mode)
+                return await parse_telegram_url_and_stream(
+                    message, msg, command, video_mode
+                )
             elif youtube.is_valid(command) and not is_spotify_track(command):
-                path = await youtube.download_media(msg, command, not video_mode)
+                path = await youtube.download_media(
+                    message, msg, command, not video_mode
+                )
                 if path:
                     await start_stream(msg, path[0], video_mode, path[1])
                     return
@@ -71,7 +75,9 @@ async def play(message: Message):
                     search = await yt_search.search_query(command)
 
                 if youtube.is_valid(search):  # type: ignore
-                    path = await youtube.download_media(msg, search, not video_mode)  # type: ignore
+                    path = await youtube.download_media(
+                        message, msg, search, not video_mode
+                    )  # type: ignore
                     if path:
                         await start_stream(msg, path[0], video_mode, path[1])
                         return

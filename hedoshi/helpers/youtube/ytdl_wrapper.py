@@ -23,6 +23,7 @@ from yt_dlp.extractor.unsupported import KnownDRMIE, KnownPiracyIE
 from yt_dlp.networking.common import _REQUEST_HANDLERS, register_rh
 from yt_dlp.postprocessor.common import PostProcessor
 
+from ..pre_query import insert_pre_query, remove_pre_query
 from ..proxy import get_proxy
 from ..telegram.downloader import _progress_func_wrapper
 from .invidious import download_from_invidious, is_valid_invidious_match
@@ -114,10 +115,18 @@ def is_valid(url: str):
 
 
 async def download_media(
+    source: Message,
     reply: Message,
     url: str,
     audio: bool = False,
 ) -> Optional[Tuple[str, str]]:
+    if insert_pre_query(
+        source.chat.id,
+        url,
+        source.from_user.id if source.from_user else source.chat.id,
+    ):
+        return None
+
     if is_in_blacklist(url):
         return None
 
@@ -167,6 +176,11 @@ async def download_media(
                 )
 
                 if try_invidious:
+                    remove_pre_query(
+                        source.chat.id,
+                        url,
+                        source.from_user.id if source.from_user else source.chat.id,
+                    )
                     return try_invidious
 
                 try_count = try_count + 1
@@ -214,6 +228,12 @@ async def download_media(
                 continue
 
             break
+
+    remove_pre_query(
+        source.chat.id,
+        url,
+        source.from_user.id if source.from_user else source.chat.id,
+    )
 
     return (
         (filename_collector.filenames[-1], basename(filename_collector.filenames[-1]))

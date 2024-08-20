@@ -22,6 +22,7 @@ from pytgcalls.types import MediaStream, VideoQuality
 from ...translations import translator as _
 from ..ffmpeg.ffprobe import get_audio_params, get_duration, get_resolution
 from ..format import time_format
+from ..pre_query import insert_pre_query, remove_pre_query
 from ..query_item import QueryItem
 from .groups import (find_active_userbot_client, get_client,
                      join_or_change_stream, userbots)
@@ -65,7 +66,16 @@ def parse_telegram_url(url: str) -> Optional[Tuple[str | int | None]]:
     return (chat_id, msg_id, topic_id)  # type: ignore
 
 
-async def parse_telegram_url_and_stream(reply: Message, url: str, is_video: bool) -> None:
+async def parse_telegram_url_and_stream(
+    source: Message, reply: Message, url: str, is_video: bool
+) -> None:
+    if insert_pre_query(
+        source.chat.id,
+        url,
+        source.from_user.id if source.from_user else source.chat.id,
+    ):
+        return  # type: ignore
+
     chat_id, message_id, _ = parse_telegram_url(url)  # type: ignore
 
     if not chat_id or not message_id:
@@ -90,11 +100,26 @@ async def parse_telegram_url_and_stream(reply: Message, url: str, is_video: bool
         except BaseException as e:
             raise e
 
+    remove_pre_query(
+        source.chat.id,
+        url,
+        source.from_user.id if source.from_user else source.chat.id,
+    )
+
     await reply.edit(
         _.translate_chat('streamTGError', cid=reply.chat.id))  # type: ignore
 
 
-async def parse_telegram_url_and_download(reply: Message, url: str) -> Optional[str]:
+async def parse_telegram_url_and_download(
+    source: Message, reply: Message, url: str
+) -> Optional[str]:
+    if insert_pre_query(
+        source.chat.id,
+        url,
+        source.from_user.id if source.from_user else source.chat.id,
+    ):
+        return None
+
     chat_id, message_id, _ = parse_telegram_url(url)  # type: ignore
 
     if not chat_id or not message_id:
@@ -116,6 +141,12 @@ async def parse_telegram_url_and_download(reply: Message, url: str) -> Optional[
             )
         except BaseException as e:
             raise e
+
+    remove_pre_query(
+        source.chat.id,
+        url,
+        source.from_user.id if source.from_user else source.chat.id,
+    )
 
     await reply.edit(
         _.translate_chat('streamTGError', cid=reply.chat.id))  # type: ignore
