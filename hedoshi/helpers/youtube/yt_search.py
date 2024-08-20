@@ -13,21 +13,44 @@ from typing import Optional, Tuple
 from urllib.parse import quote_plus
 
 from httpx import AsyncClient
+from pyrogram.types import Message
 
+from ..pre_query import insert_pre_query, remove_pre_query
 from ..spotify import spotify_get_track_info
 from .invidious import search_invidious
 
 
-async def search_from_spotify_link(url: str) -> Optional[str]:
+async def search_from_spotify_link(source: Message, url: str) -> Optional[str]:
+    if insert_pre_query(
+        source.chat.id,
+        url,
+        source.from_user.id if source.from_user else source.chat.id,
+    ):
+        return None
+
     track_info: Tuple = await spotify_get_track_info(url)
+
+    remove_pre_query(
+        source.chat.id,
+        url,
+        source.from_user.id if source.from_user else source.chat.id,
+    )
+
     if track_info:
-        return await search_query(" ".join(track_info))
+        return await search_query(source, " ".join(track_info))
 
 
-async def search_query(query: str) -> Optional[str]:
+async def search_query(source: Message, query: str) -> Optional[str]:
     "Returns link if query is valid"
 
     if not query or not len(query):
+        return None
+
+    if insert_pre_query(
+        source.chat.id,
+        query,
+        source.from_user.id if source.from_user else source.chat.id,
+    ):
         return None
 
     from ... import bot_config
@@ -41,6 +64,11 @@ async def search_query(query: str) -> Optional[str]:
     if use_invidious:
         result = await search_invidious(query)
         if result:
+            remove_pre_query(
+                source.chat.id,
+                query,
+                source.from_user.id if source.from_user else source.chat.id,
+            )
             return result
 
     url = f'https://www.youtube.com/results?search_query={quote_plus(query)}'
@@ -75,6 +103,12 @@ async def search_query(query: str) -> Optional[str]:
                 video_data = video.get("videoRenderer", {})
                 id = video_data.get("videoId", None)
                 if id and len(id):
+                    remove_pre_query(
+                        source.chat.id,
+                        query,
+                        source.from_user.id if source.from_user else source.chat.id,
+                    )
+
                     return f'https://www.youtube.com/watch?v={id}'
 
     return None

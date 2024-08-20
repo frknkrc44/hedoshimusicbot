@@ -70,9 +70,9 @@ async def download(message: Message):
                     return await upload_file_or_send_message(path[0])
             else:
                 if is_spotify_track(command):
-                    search = await yt_search.search_from_spotify_link(command)
+                    search = await yt_search.search_from_spotify_link(message, command)
                 else:
-                    search = await yt_search.search_query(command)
+                    search = await yt_search.search_query(message, command)
 
                 if youtube.is_valid(search):
                     path = await youtube.download_media(message, msg, search)
