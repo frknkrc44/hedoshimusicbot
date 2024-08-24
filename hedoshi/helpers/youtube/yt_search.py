@@ -79,29 +79,36 @@ async def search_query(source: Message, query: str) -> Optional[str]:
         bot_config.YTDL_COOKIE_FILE if hasattr(bot_config, "YTDL_COOKIE_FILE") else None
     )
 
+    cookie_content: Optional[str] = None
+    if ytdl_cookie_file and exists(ytdl_cookie_file):
+        jar = YoutubeDLCookieJar()
+        jar.load(ytdl_cookie_file)
+
+        cookie_content = jar.get_cookie_header(url)
+
     async def send_query():
-        async with AsyncClient() as http:
-            headers = {
-                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/110.0",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
-                "SEC-FETCH-DEST": "document",
-                "SEC-FETCH-MODE": "navigate",
-                "SEC-FETCH-SITE": "none",
-                "SEC-FETCH-USER": "?1",
-                "UPGRADE-INSECURE-REQUESTS": "1",
-            }
+        try:
+            async with AsyncClient() as http:
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/110.0",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                    "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
+                    "SEC-FETCH-DEST": "document",
+                    "SEC-FETCH-MODE": "navigate",
+                    "SEC-FETCH-SITE": "none",
+                    "SEC-FETCH-USER": "?1",
+                    "UPGRADE-INSECURE-REQUESTS": "1",
+                }
 
-            if ytdl_cookie_file and exists(ytdl_cookie_file):
-                jar = YoutubeDLCookieJar()
-                jar.load(ytdl_cookie_file)
+                if cookie_content:
+                    headers["Cookie"] = cookie_content
 
-                headers["Cookie"] = jar.get_cookie_header(url)
-
-            return await http.get(
-                url,
-                headers=headers,
-            )
+                return await http.get(
+                    url,
+                    headers=headers,
+                )
+        except BaseException:
+            return None
 
     tag = 'ytInitialData'
 
