@@ -7,7 +7,6 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from functools import lru_cache
 from logging import info
 from os import remove as remove_file
 from os.path import basename
@@ -18,16 +17,6 @@ from .query_item import QueryItem
 
 
 class QueryList(List[QueryItem]):
-    @lru_cache()
-    def __is_remove_file_enabled(self):
-        from .. import bot_config
-
-        return (
-            bot_config.BOT_REMOVE_FILE_AUTO
-            if hasattr(bot_config, "BOT_REMOVE_FILE_AUTO")
-            else False
-        )
-
     def media_in_use(self, value: QueryItem) -> bool:
         return any(
             basename(i.stream._media_path) == basename(value.stream._media_path)
@@ -41,7 +30,15 @@ class QueryList(List[QueryItem]):
         return item
 
     def remove_item(self, value: QueryItem) -> None:
-        if self.__is_remove_file_enabled() and not self.media_in_use(value):
+        from .. import bot_config
+
+        remove_file_enabled = (
+            bot_config.BOT_REMOVE_FILE_AUTO
+            if hasattr(bot_config, "BOT_REMOVE_FILE_AUTO")
+            else False
+        )
+
+        if remove_file_enabled and not self.media_in_use(value):
             info(
                 f"Auto-remove enabled and the media not in use, removing {value.stream._media_path}"
             )
