@@ -34,8 +34,7 @@ class PreQueryList(List[PreQueryItem]):
                 item
                 for item in self
                 if item.chat_id == chat_id
-                or item.link == link
-                or item.requester_id == requester_id
+                and (item.link == link or item.requester_id == requester_id)
             ),
             None,
         )
@@ -46,8 +45,7 @@ class PreQueryList(List[PreQueryItem]):
                 item
                 for item in self
                 if item.chat_id == chat_id
-                or item.link == link
-                or item.requester_id == requester_id
+                and (item.link == link or item.requester_id == requester_id)
             ),
             None,
         )
