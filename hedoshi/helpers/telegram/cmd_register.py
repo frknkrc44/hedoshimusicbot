@@ -28,15 +28,21 @@ def is_owner(message: Message):
 
 
 async def is_admin(message: Message):
-    member = await message.chat.get_member(message.from_user.id)
-    return member.promoted_by is not None
+    try:
+        member = await message.chat.get_member(message.from_user.id)
+        return member.promoted_by is not None
+    except BaseException:
+        return False
 
 
 async def is_bot_admin(chat: Chat):
     from ... import bot
 
-    member = await chat.get_member(bot.me.id)
-    return member.privileges and member.privileges.can_invite_users
+    try:
+        member = await chat.get_member(bot.me.id)
+        return member.privileges and member.privileges.can_invite_users
+    except BaseException:
+        return False
 
 
 def register(
