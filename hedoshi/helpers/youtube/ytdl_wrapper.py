@@ -213,9 +213,7 @@ async def download_media(
         opts["cookiefile"] = ytdl_cookie_file
 
     if audio:
-        opts["format"] = (
-            "m4a" if is_valid_invidious_match(url) else "bestaudio/worst/source"
-        )
+        opts["format"] = "bestaudio/m4a/worstvideo/worst/source"
     else:
         opts["format"] = "bestvideo[height<=1080]+bestaudio/best/source"
 
