@@ -103,7 +103,6 @@ async def parse_telegram_url_and_stream(
     remove_pre_query(
         source.chat.id,
         url,
-        source.from_user.id if source.from_user else source.chat.id,
     )
 
     await reply.edit(
@@ -145,7 +144,6 @@ async def parse_telegram_url_and_download(
     remove_pre_query(
         source.chat.id,
         url,
-        source.from_user.id if source.from_user else source.chat.id,
     )
 
     await reply.edit(

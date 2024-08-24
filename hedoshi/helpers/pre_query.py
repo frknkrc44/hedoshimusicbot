@@ -28,25 +28,15 @@ class PreQueryList(List[PreQueryItem]):
     def pre_queries_by_chat(self, chat_id: int) -> List[PreQueryItem]:
         return [item for item in self if item.chat_id == chat_id]
 
-    def contains_link_or_requester(self, chat_id: int, link: str, requester_id: int):
+    def contains_chat(self, chat_id: int):
         return next(
-            (
-                item
-                for item in self
-                if item.chat_id == chat_id
-                and (item.link == link or item.requester_id == requester_id)
-            ),
+            (item for item in self if item.chat_id == chat_id),
             None,
         )
 
-    def remove_pre_query(self, chat_id: int, link: str, requester_id: int):
+    def remove_pre_query(self, chat_id: int, link: str):
         found = next(
-            (
-                item
-                for item in self
-                if item.chat_id == chat_id
-                and (item.link == link or item.requester_id == requester_id)
-            ),
+            (item for item in self if item.chat_id == chat_id and item.link == link),
             None,
         )
 
@@ -65,12 +55,12 @@ def __is_spam_protection_enabled() -> bool:
     return values.get("BOT_USE_SPAM_PROTECTION", "False") == "True"
 
 
-def __is_requested(chat_id: int, link: str, requester_id: int):
+def __is_requested(chat_id: int):
     protection_enabled = __is_spam_protection_enabled()
     if not protection_enabled:
         return False
 
-    return __query.contains_link_or_requester(chat_id, link, requester_id)
+    return __query.contains_chat(chat_id)
 
 
 def get_pre_queries_by_chat(chat_id: int):
@@ -78,12 +68,12 @@ def get_pre_queries_by_chat(chat_id: int):
 
 
 def insert_pre_query(chat_id: int, link: str, requester_id: int):
-    if __is_requested(chat_id, link, requester_id):
+    if __is_requested(chat_id):
         return True
 
     __query.append(PreQueryItem(chat_id, link, requester_id))
     return False
 
 
-def remove_pre_query(chat_id: int, link: str, requester_id: int):
-    return __query.remove_pre_query(chat_id, link, requester_id)
+def remove_pre_query(chat_id: int, link: str):
+    return __query.remove_pre_query(chat_id, link)

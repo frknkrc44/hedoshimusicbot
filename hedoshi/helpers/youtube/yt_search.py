@@ -35,7 +35,6 @@ async def search_from_spotify_link(source: Message, url: str) -> Optional[str]:
     remove_pre_query(
         source.chat.id,
         url,
-        source.from_user.id if source.from_user else source.chat.id,
     )
 
     if track_info:
@@ -69,7 +68,6 @@ async def search_query(source: Message, query: str) -> Optional[str]:
             remove_pre_query(
                 source.chat.id,
                 query,
-                source.from_user.id if source.from_user else source.chat.id,
             )
             return result
 
@@ -118,7 +116,6 @@ async def search_query(source: Message, query: str) -> Optional[str]:
     remove_pre_query(
         source.chat.id,
         query,
-        source.from_user.id if source.from_user else source.chat.id,
     )
 
     start = res.text.index(tag) + len(tag) + 3

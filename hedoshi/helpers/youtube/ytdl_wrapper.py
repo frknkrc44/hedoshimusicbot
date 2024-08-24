@@ -193,7 +193,6 @@ async def download_media(
                     remove_pre_query(
                         source.chat.id,
                         url,
-                        source.from_user.id if source.from_user else source.chat.id,
                     )
                     return try_invidious
 
@@ -249,7 +248,6 @@ async def download_media(
     remove_pre_query(
         source.chat.id,
         url,
-        source.from_user.id if source.from_user else source.chat.id,
     )
 
     return (
