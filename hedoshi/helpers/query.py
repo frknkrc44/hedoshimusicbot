@@ -7,6 +7,7 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
+from functools import lru_cache
 from logging import info
 from os import remove as remove_file
 from os.path import basename
@@ -17,15 +18,22 @@ from .query_item import QueryItem
 
 
 class QueryList(List[QueryItem]):
+    @lru_cache()
+    def __is_remove_file_enabled(self):
+        from .. import bot_config
+
+        return (
+            bot_config.BOT_REMOVE_FILE_AUTO
+            if hasattr(bot_config, "BOT_REMOVE_FILE_AUTO")
+            else False
+        )
+
     def media_in_use(self, value: QueryItem) -> bool:
-        for i in self:
-            base_i = basename(i.stream._media_path)
-            base_value = basename(value.stream._media_path)
-
-            if base_i == base_value and i != value:
-                return True
-
-        return False
+        return any(
+            basename(i.stream._media_path) == basename(value.stream._media_path)
+            and i != value
+            for i in self
+        )
 
     def pop_item(self, index: int) -> QueryItem:
         item = self[index]
@@ -33,15 +41,7 @@ class QueryList(List[QueryItem]):
         return item
 
     def remove_item(self, value: QueryItem) -> None:
-        from .. import bot_config
-
-        remove_file_enabled = (
-            bot_config.BOT_REMOVE_FILE_AUTO
-            if hasattr(bot_config, "BOT_REMOVE_FILE_AUTO")
-            else False
-        )
-
-        if remove_file_enabled and not self.media_in_use(value):
+        if self.__is_remove_file_enabled() and not self.media_in_use(value):
             info(
                 f"Auto-remove enabled and the media not in use, removing {value.stream._media_path}"
             )
@@ -56,12 +56,7 @@ query = QueryList()
 
 
 def get_queries_by_chat(chat_id: int) -> List[QueryItem]:
-    new_list = []
-    for item in query:
-        if item.chat_id == chat_id:
-            new_list.append(item)
-
-    return new_list
+    return [item for item in query if item.chat_id == chat_id]
 
 
 def remove_query_by_chat(chat_id: int, index: int) -> bool:
@@ -110,10 +105,7 @@ def clear_query(chat_id: int) -> None:
     if not len(query):
         return
 
-    remove = []
-    for item in query:
-        if item.chat_id == chat_id:
-            remove.append(item)
+    remove = get_queries_by_chat(chat_id)
 
     if not len(remove):
         return
