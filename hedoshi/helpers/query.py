@@ -64,7 +64,6 @@ def remove_query_by_chat(chat_id: int, index: int) -> bool:
         return False
 
     current_index = -1
-    remove_index = -1
 
     for item in query:
         if item.chat_id == chat_id:
@@ -74,12 +73,9 @@ def remove_query_by_chat(chat_id: int, index: int) -> bool:
             continue
 
         if current_index == index:
-            remove_index = query.index(item)
+            return query.pop_item(index)
 
-    if remove_index < 0:
-        return False
-
-    return query.pop_item(remove_index)
+    return False
 
 
 def get_next_query(chat_id: int, delete: bool = False) -> Optional[QueryItem]:
