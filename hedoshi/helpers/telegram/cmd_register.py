@@ -77,20 +77,6 @@ def register(
             if message.chat.type == ChatType.CHANNEL:
                 return
 
-            if admin and (not await is_admin(message) or not is_owner(message)):
-                if notify_user:
-                    await reply_message(
-                        message, _.translate_chat("errNotAdmin", cid=message.chat.id)
-                    )
-                return
-
-            if bot_admin and not (await is_bot_admin(message.chat)):
-                if notify_user:
-                    await reply_message(
-                        message, _.translate_chat("errNotBotAdmin", cid=message.chat.id)
-                    )
-                return
-
             if message.chat.type in (ChatType.GROUP, ChatType.SUPERGROUP) and not group:
                 if notify_user:
                     await reply_message(
@@ -104,6 +90,20 @@ def register(
                     await reply_message(
                         message,
                         _.translate_chat("errPrivateRestricted", cid=message.chat.id),
+                    )
+                return
+
+            if admin and (not await is_admin(message) or not is_owner(message)):
+                if notify_user:
+                    await reply_message(
+                        message, _.translate_chat("errNotAdmin", cid=message.chat.id)
+                    )
+                return
+
+            if bot_admin and not (await is_bot_admin(message.chat)):
+                if notify_user:
+                    await reply_message(
+                        message, _.translate_chat("errNotBotAdmin", cid=message.chat.id)
                     )
                 return
 
