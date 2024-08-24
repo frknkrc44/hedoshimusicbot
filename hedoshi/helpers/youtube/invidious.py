@@ -356,8 +356,7 @@ async def __async_file_download(
 
                     output.close()
 
-                    if total != getsize(file_name):
-                        print("Mismatching download size")
+                    assert exists(file_name) and total == getsize(file_name)
 
                     print("Download finished!")
                     return file_name
