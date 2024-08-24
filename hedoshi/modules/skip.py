@@ -21,11 +21,24 @@ from ..translations import translator as _
 
 @register(cmd="skip|next|atla|sonraki")
 async def skip(message: Message):
+    amount = 1
+
+    try:
+        if len(message.command) > 1:
+            amount = int(message.command[1])
+    except BaseException:
+        pass
+
     userbot = await find_active_userbot(message)
     if userbot:
         try:
             assert await is_active(message.chat.id, userbot)
-            await stream_end(userbot, update=StreamAudioEnded(message.chat.id), force_skip=True)
+            await stream_end(
+                userbot,
+                update=StreamAudioEnded(message.chat.id),
+                force_skip=True,
+                skip_count=amount,
+            )
             return
         except BaseException:
             print(format_exc())

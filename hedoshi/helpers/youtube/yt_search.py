@@ -8,6 +8,7 @@
 #
 
 from json import loads
+from os.path import exists
 from time import sleep
 from typing import Optional, Tuple
 from urllib.parse import quote_plus
@@ -18,6 +19,7 @@ from pyrogram.types import Message
 from ..pre_query import insert_pre_query, remove_pre_query
 from ..spotify import spotify_get_track_info
 from .invidious import search_invidious
+from yt_dlp.cookies import YoutubeDLCookieJar
 
 
 async def search_from_spotify_link(source: Message, url: str) -> Optional[str]:
@@ -73,26 +75,44 @@ async def search_query(source: Message, query: str) -> Optional[str]:
 
     url = f'https://www.youtube.com/results?search_query={quote_plus(query)}'
 
+    ytdl_cookie_file = (
+        bot_config.YTDL_COOKIE_FILE if hasattr(bot_config, "YTDL_COOKIE_FILE") else None
+    )
+
     async def send_query():
         async with AsyncClient() as http:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/110.0",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
+                "SEC-FETCH-DEST": "document",
+                "SEC-FETCH-MODE": "navigate",
+                "SEC-FETCH-SITE": "none",
+                "SEC-FETCH-USER": "?1",
+                "UPGRADE-INSECURE-REQUESTS": "1",
+            }
+
+            if ytdl_cookie_file and exists(ytdl_cookie_file):
+                jar = YoutubeDLCookieJar()
+                jar.load(ytdl_cookie_file)
+
+                headers["Cookie"] = jar.get_cookie_header(url)
+
             return await http.get(
                 url,
-                headers={
-                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/110.0",
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-                    "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
-                    "SEC-FETCH-DEST": "document",
-                    "SEC-FETCH-MODE": "navigate",
-                    "SEC-FETCH-SITE": "none",
-                    "SEC-FETCH-USER": "?1",
-                    "UPGRADE-INSECURE-REQUESTS": "1",
-                },
+                headers=headers,
             )
 
     tag = 'ytInitialData'
 
     while tag not in (res := await send_query()).text:
         sleep(1)
+
+    remove_pre_query(
+        source.chat.id,
+        query,
+        source.from_user.id if source.from_user else source.chat.id,
+    )
 
     start = res.text.index(tag) + len(tag) + 3
     end = res.text.index('};', start) + 1
@@ -103,12 +123,6 @@ async def search_query(source: Message, query: str) -> Optional[str]:
                 video_data = video.get("videoRenderer", {})
                 id = video_data.get("videoId", None)
                 if id and len(id):
-                    remove_pre_query(
-                        source.chat.id,
-                        query,
-                        source.from_user.id if source.from_user else source.chat.id,
-                    )
-
                     return f'https://www.youtube.com/watch?v={id}'
 
     return None

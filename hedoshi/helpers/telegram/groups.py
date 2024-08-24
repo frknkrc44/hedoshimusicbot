@@ -158,7 +158,12 @@ async def get_current_duration(message: Message) -> Optional[int]:
     return None
 
 
-async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False) -> None:
+async def stream_end(
+    client: PyTgCalls,
+    update: Update,
+    force_skip: bool = False,
+    skip_count: int = 1,
+) -> None:
     # if video stream ends, StreamAudioEnded and StreamVideoEnded is invoked
     # so we can ignore the video stream end signal
     if type(update) != StreamAudioEnded:  # noqa: E721
@@ -176,7 +181,9 @@ async def stream_end(client: PyTgCalls, update: Update, force_skip: bool = False
             video_parameters=item.stream._video_parameters,
         )
     else:
-        get_next_query(update.chat_id, True)
+        for i in range(skip_count):
+            get_next_query(update.chat_id, True)
+
         item = get_next_query(update.chat_id)
 
     from ... import bot

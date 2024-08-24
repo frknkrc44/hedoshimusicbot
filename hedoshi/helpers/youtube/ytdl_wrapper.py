@@ -11,7 +11,7 @@ from asyncio import get_event_loop
 from asyncio import run as async_run
 from logging import info
 from os import getcwd, sep
-from os.path import basename
+from os.path import basename, exists
 from re import match
 from traceback import format_exc
 from typing import Dict, Optional, Tuple
@@ -35,6 +35,16 @@ yt_valid_ends = [
 
 def set_httpx_handler():
     from ... import bot_config
+
+    """
+    ytdl_cookie_file = (
+        bot_config.YTDL_COOKIE_FILE if hasattr(bot_config, "YTDL_COOKIE_FILE") else None
+    )
+
+    if ytdl_cookie_file and exists(ytdl_cookie_file):
+        print("YT-DLP will NOT use HTTPX due to cookies")
+        return
+    """
 
     use_httpx = (
         bot_config.YTDL_USE_HTTPX if hasattr(bot_config, "YTDL_USE_HTTPX") else False
@@ -150,6 +160,10 @@ async def download_media(
 
     from ... import bot_config
 
+    ytdl_cookie_file = (
+        bot_config.YTDL_COOKIE_FILE if hasattr(bot_config, "YTDL_COOKIE_FILE") else None
+    )
+
     use_invidious = (
         bot_config.BOT_USE_INVIDIOUS
         if hasattr(bot_config, "BOT_USE_INVIDIOUS")
@@ -195,8 +209,13 @@ async def download_media(
         "progress_hooks": [ytdl_progress_hook],
     }
 
+    if ytdl_cookie_file and exists(ytdl_cookie_file):
+        opts["cookiefile"] = ytdl_cookie_file
+
     if audio:
-        opts["format"] = "bestaudio/worst/source"
+        opts["format"] = (
+            "m4a" if is_valid_invidious_match(url) else "bestaudio/worst/source"
+        )
     else:
         opts["format"] = "bestvideo[height<=1080]+bestaudio/best/source"
 

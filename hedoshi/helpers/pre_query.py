@@ -1,3 +1,4 @@
+from functools import lru_cache
 from json import dumps
 from logging import info
 from typing import List
@@ -20,42 +21,62 @@ class PreQueryItem:
 
 
 class PreQueryList(List[PreQueryItem]):
+    def append(self, object: PreQueryItem) -> None:
+        info(f"Adding {object} to the pre query")
+        return super().append(object)
+
     def pre_queries_by_chat(self, chat_id: int) -> List[PreQueryItem]:
         return [item for item in self if item.chat_id == chat_id]
 
     def contains_link_or_requester(self, chat_id: int, link: str, requester_id: int):
-        pre_query = self.pre_queries_by_chat(chat_id)
-
-        link_found = any(item.link == link for item in pre_query)
-        requester_found = any(item.requester_id == requester_id for item in pre_query)
-
-        return link_found or requester_found
+        return next(
+            (
+                item
+                for item in self
+                if item.chat_id == chat_id
+                or item.link == link
+                or item.requester_id == requester_id
+            ),
+            None,
+        )
 
     def remove_pre_query(self, chat_id: int, link: str, requester_id: int):
-        items_removing = []
+        found = next(
+            (
+                item
+                for item in self
+                if item.chat_id == chat_id
+                or item.link == link
+                or item.requester_id == requester_id
+            ),
+            None,
+        )
 
-        for item in self:
-            if (
-                item.chat_id == chat_id
-                and item.link == link
-                and item.requester_id == requester_id
-            ):
-                items_removing.append(item)
-
-        for item in items_removing:
-            info(f"Removing {item} from pre query")
-            self.remove(item)
+        if found:
+            info(f"Removing {found} from the pre query")
+            self.remove(found)
 
 
 __query = PreQueryList()
 
 
-def is_requested(chat_id: int, link: str, requester_id: int):
+@lru_cache()
+def __is_spam_protection_enabled() -> bool:
+    from ..bot_config import values
+
+    return values.get("BOT_USE_SPAM_PROTECTION", "False") == "True"
+
+
+def __is_requested(chat_id: int, link: str, requester_id: int):
+    protection_enabled = __is_spam_protection_enabled()
+    if not protection_enabled:
+        return False
+
     return __query.contains_link_or_requester(chat_id, link, requester_id)
 
 
 def insert_pre_query(chat_id: int, link: str, requester_id: int):
-    if is_requested(chat_id, link, requester_id):
+    if __is_requested(chat_id, link, requester_id):
         return True
 
     __query.append(PreQueryItem(chat_id, link, requester_id))

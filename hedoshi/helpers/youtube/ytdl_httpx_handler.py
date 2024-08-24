@@ -1,6 +1,5 @@
 from asyncio import run
 from io import IOBase
-from traceback import format_exception
 from typing import AsyncIterator, Dict, Optional
 
 from httpx import AsyncClient, Request, Response
@@ -31,7 +30,11 @@ class HTTPXRH(RequestHandler):
         return {f"{k}://": v for k, v in proxies.items()}
 
     async def _asend(self, request: YtDLRequest) -> YtDLResponse:
-        proxies: dict = self._get_proxies(request)
+        proxies: Dict = self._get_proxies(request)
+
+        cookies: Optional[str] = self.cookiejar.get_cookie_header(request.url)
+        if cookies:
+            request.headers["Cookie"] = cookies
 
         async with AsyncClient(
             proxies=proxies,
@@ -62,7 +65,6 @@ class _HTTPXByteStream(IOBase):
         try:
             return run(self.reader.__anext__())
         except BaseException as e:
-            print("\n".join(format_exception(e)))
             raise e
 
     def _checkClosed(self) -> None:
