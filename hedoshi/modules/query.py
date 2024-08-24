@@ -9,6 +9,7 @@
 
 from pyrogram.types import Message
 
+from ..helpers.pre_query import get_pre_queries_by_chat
 from ..helpers.query import get_queries_by_chat, remove_query_by_chat
 from ..helpers.telegram.cmd_register import register
 from ..helpers.telegram.groups import get_current_duration
@@ -36,7 +37,25 @@ async def lquery(message: Message):
             details = item.query_details(current_duration=current)
             out = out + f"**{num}**\n{details}\n\n"
 
-    await reply_message(message, out)
+    pre_query = get_pre_queries_by_chat(message.chat.id)
+    if len(pre_query):
+        if not len(query):
+            out = ""
+
+        dl_text = _.translate_chat(
+            "queryDownloads",
+            cid=message.chat.id,
+        )
+        out = f"{out}**{dl_text}**"
+
+        for item in pre_query:
+            out = f"{out}\n- `{item.link}`"
+
+    await reply_message(
+        message,
+        out,
+        disable_web_page_preview=True,
+    )
 
 @register(
     cmd="qdel|ssil",

@@ -75,6 +75,10 @@ def __is_requested(chat_id: int, link: str, requester_id: int):
     return __query.contains_link_or_requester(chat_id, link, requester_id)
 
 
+def get_pre_queries_by_chat(chat_id: int):
+    return [item for item in __query if item.chat_id == chat_id]
+
+
 def insert_pre_query(chat_id: int, link: str, requester_id: int):
     if __is_requested(chat_id, link, requester_id):
         return True

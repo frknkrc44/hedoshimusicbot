@@ -31,6 +31,7 @@
     "queryDuration": "Süre: {}",
     "queryDelSuccess": "Öğe silindi",
     "queryDelFail": "Öğe silinemedi",
+    "queryDownloads": "İndirilenler",
     "loopOn": "Şu anda oynatılan içerik tekrarlanacak",
     "loopOff": "Şu anda oynatılan içerik tekrarlanmayacak",
     "streamLoop": "Akış tekrarlanıyor!\n{}",

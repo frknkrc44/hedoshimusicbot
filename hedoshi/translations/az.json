@@ -31,6 +31,7 @@
     "queryDuration": "Müddət: {}",
     "queryDelSuccess": "Maddə silindi",
     "queryDelFail": "Maddə silinmədi",
+    "queryDownloads": "Yükləmələr",
     "loopOn": "Hazırda çalınan məzmun təkrarlanacaq",
     "loopOff": "Hazırda çalınan məzmun təkrarlanmayacaq",
     "streamLoop": "Axın təkrarlanır!\n{}",
