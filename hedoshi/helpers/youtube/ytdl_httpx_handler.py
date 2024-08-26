@@ -38,7 +38,7 @@ class HTTPXRH(RequestHandler):
 
         async with AsyncClient(
             proxies=proxies,
-            timeout=30,
+            timeout=5,
         ) as http:
             sent = await http.send(
                 Request(

@@ -63,7 +63,7 @@ async def search_invidious(query: str) -> str:
         search_url = f"{mirror}/api/v1/search?q={query}"
 
         try:
-            async with AsyncClient(timeout=30) as http:
+            async with AsyncClient(timeout=10) as http:
                 req = await http.get(search_url)
                 try:
                     out_json = req.json()
@@ -320,7 +320,7 @@ async def __async_file_download(
 
             async with AsyncClient(
                 proxy=proxy,
-                timeout=30,
+                timeout=5,
             ) as http:
                 output = open(file_name, "wb")
 
