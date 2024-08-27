@@ -15,11 +15,11 @@ from urllib.parse import quote_plus
 
 from httpx import AsyncClient
 from pyrogram.types import Message
+from yt_dlp.cookies import YoutubeDLCookieJar
 
 from ..pre_query import insert_pre_query, remove_pre_query
 from ..spotify import spotify_get_track_info
 from .invidious import search_invidious
-from yt_dlp.cookies import YoutubeDLCookieJar
 
 
 async def search_from_spotify_link(source: Message, url: str) -> Optional[str]:

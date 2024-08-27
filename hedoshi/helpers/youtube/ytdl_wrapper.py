@@ -10,9 +10,9 @@
 from asyncio import get_event_loop
 from asyncio import run as async_run
 from logging import info
-from os import getcwd, rename, sep
-from os.path import basename, dirname, exists
-from re import match, sub
+from os import getcwd, sep
+from os.path import exists
+from re import match
 from traceback import format_exc
 from typing import Dict, Optional, Tuple
 
@@ -79,6 +79,7 @@ def set_httpx_handler():
 
 set_httpx_handler()
 
+
 class FilenameCollectorPP(PostProcessor):
     # https://stackoverflow.com/a/68165682
     def __init__(self, is_audio: bool):
@@ -89,18 +90,12 @@ class FilenameCollectorPP(PostProcessor):
 
     def run(self, information: Dict):
         path: str = information.get("filepath")
+        uploader: str = information.get("uploader")
+        title: str = information.get("title")
 
         if exists(path):
-            ext = path[path.rfind(r".") + 1 :]
-            file_name_suffix = f"{information.get('uploader')}-{information.get('title')}-{'a' if self.is_audio else 'v'}.{ext}"
-            file_name_escaped = "{}{}dl-{}".format(
-                dirname(path),
-                sep,
-                sub("[^0-9A-Za-z\.]", "", file_name_suffix),
-            )
-            rename(path, file_name_escaped)
-            self.filename = file_name_suffix
-            self.filepath = file_name_escaped
+            self.filename = f"{uploader} - {title} ({'a' if self.is_audio else 'v'})"
+            self.filepath = path
 
         return [], information
 
@@ -231,7 +226,7 @@ async def download_media(
     else:
         opts["format"] = "bestvideo[height<=1080]+bestaudio/best/source"
 
-    filename_collector = FilenameCollectorPP(is_audio=audio)
+    filename_collector = FilenameCollectorPP(audio)
 
     with YoutubeDL(opts) as ytdl:
         ytdl.add_post_processor(filename_collector)
@@ -266,7 +261,7 @@ async def download_media(
     )
 
     return (
-        (filename_collector.filepath, basename(filename_collector.filename))
+        (filename_collector.filepath, filename_collector.filename)
         if len(filename_collector.filename)
         else None
     )

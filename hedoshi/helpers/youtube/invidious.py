@@ -12,7 +12,7 @@ from json.decoder import JSONDecodeError
 from os import getcwd, remove, sep
 from os.path import exists, getsize
 from random import shuffle
-from re import match, sub
+from re import match
 from traceback import format_exc
 from typing import Callable, Dict, List, Optional, Tuple
 
@@ -128,6 +128,7 @@ async def __youtube2invidious(url: str, audio: bool):
                             audio_url, container = __get_audio_url(out_json)
 
                             return (
+                                video_id,
                                 out_json["title"],
                                 out_json["author"],
                                 audio_url,
@@ -147,6 +148,7 @@ async def __youtube2invidious(url: str, audio: bool):
                             audio_video_url, container = __get_audio_video_url(out_json)
 
                             return (
+                                video_id,
                                 out_json["title"],
                                 out_json["author"],
                                 None,
@@ -157,6 +159,7 @@ async def __youtube2invidious(url: str, audio: bool):
                             audio_url, video_url, container = __get_video_url(out_json)
 
                             return (
+                                video_id,
                                 out_json["title"],
                                 out_json["author"],
                                 audio_url,
@@ -188,11 +191,7 @@ def __get_audio_url(out_json: Dict) -> Optional[Tuple[str, str]]:
             file_type.find("/") + 1 : file_type.find(";")
         ]
 
-    container = last_audio["container"]
-    if container == "webm":
-        container = "opus"
-
-    return last_audio["url"], container
+    return last_audio["url"], last_audio["container"]
 
 
 def __get_video_url(out_json: Dict) -> Optional[Tuple[str, str, str]]:
@@ -238,13 +237,12 @@ async def download_from_invidious(
     result = await __youtube2invidious(url, audio)
 
     if result:
-        title, author, audio_url, video_url, ext = result
+        video_id, title, author, audio_url, video_url, ext = result
     else:
         return None
 
-    file_name_suffix = f"{author}-{title}-{'a' if audio else 'v'}.{ext}"
-    file_name_escaped = sub("[^0-9A-Za-z\.]", "", file_name_suffix)
-    file_name = f"{getcwd()}{sep}downloads{sep}dl-{file_name_escaped}"
+    file_name_suffix = f"{author} - {title} ({'a' if audio else 'v'})"
+    file_name = f"{getcwd()}{sep}downloads{sep}{video_id}-{'a' if audio else 'v'}.{ext}"
 
     if exists(file_name):
         return file_name, file_name_suffix
