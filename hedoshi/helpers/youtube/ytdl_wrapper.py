@@ -159,12 +159,15 @@ async def download_media(
 
     def ytdl_progress_hook(progress: Dict):
         downloaded = progress.get("downloaded_bytes", 0)
-        total = progress.get("total_bytes", max(downloaded, 1))
+        total = progress.get("total_bytes")
+
+        if not total:
+            total = max(downloaded, 1)
 
         async_run(
             invidious_progress_hook(
                 downloaded,
-                total or max(downloaded, 1),
+                total,
             )
         )
 
