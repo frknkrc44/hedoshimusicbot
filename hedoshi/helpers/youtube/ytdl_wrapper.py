@@ -140,14 +140,14 @@ async def download_media(
     url: str,
     audio: bool = False,
 ) -> Optional[Tuple[str, str]]:
+    if is_in_blacklist(url):
+        return None
+
     if insert_pre_query(
         source.chat.id,
         url,
         source.from_user.id if source.from_user else source.chat.id,
     ):
-        return None
-
-    if is_in_blacklist(url):
         return None
 
     async def invidious_progress_hook(current: int, total: int):
@@ -204,6 +204,7 @@ async def download_media(
                         source.chat.id,
                         url,
                     )
+
                     return try_invidious
 
                 try_count = try_count + 1
