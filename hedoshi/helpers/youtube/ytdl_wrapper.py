@@ -212,6 +212,7 @@ async def download_media(
                 try_count = try_count + 1
 
     opts = {
+        "concurrent_fragment_downloads": 2,
         "ignoreerrors": True,
         "outtmpl": f'{getcwd()}{sep}downloads{sep}%(id)s-{"a" if audio else "v"}.%(ext)s',
         "cachedir": f"{getcwd()}{sep}downloads",
