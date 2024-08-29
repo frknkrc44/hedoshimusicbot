@@ -111,6 +111,14 @@ async def __youtube2invidious(url: str, audio: bool):
 
                 if find_and >= 0:
                     video_id = video_id[:find_and]
+            elif "/shorts/" in url or "/youtu.be/" in url:
+                video_id = url[url.rfind("/") + 1 :]
+                find_qs = video_id.find("?")
+
+                if find_qs >= 0:
+                    video_id = video_id[:find_qs]
+            else:
+                raise Exception("The video link is not recognized correctly")
 
             videos_url = f"{mirror}/api/v1/videos/{video_id}"
 
