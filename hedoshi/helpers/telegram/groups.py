@@ -95,8 +95,7 @@ async def join_or_change_stream(
         if 'msg' not in locals():
             await reply_message(message, tr("astPlayFail"))
         else:
-            await locals()['msg'].edit(tr('astPlayFail'))
-        raise e
+            await locals()["msg"].edit(tr("astPlayFail"))
     
     return None
 

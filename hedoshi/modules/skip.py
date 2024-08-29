@@ -41,7 +41,6 @@ async def skip(message: Message):
             )
             return
         except BaseException:
-            print(format_exc())
             pass
 
     await reply_message(message, _.translate_chat("queryEmpty", cid=message.chat.id))

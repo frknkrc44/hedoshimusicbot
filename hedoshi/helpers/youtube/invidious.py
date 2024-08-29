@@ -118,7 +118,7 @@ async def __youtube2invidious(url: str, audio: bool):
                 if find_qs >= 0:
                     video_id = video_id[:find_qs]
             else:
-                raise Exception("The video link is not recognized correctly")
+                return None
 
             videos_url = f"{mirror}/api/v1/videos/{video_id}"
 
@@ -177,7 +177,6 @@ async def __youtube2invidious(url: str, audio: bool):
                     else:
                         try_count = try_count + 1
             except BaseException:
-                print(format_exc())
                 try_count = try_count + 1
 
     return None
@@ -371,7 +370,5 @@ async def __async_file_download(
 
             if exists(file_name):
                 remove(file_name)
-
-            print(format_exc())
 
     return None

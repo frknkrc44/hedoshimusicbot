@@ -126,8 +126,6 @@ async def parse_telegram_url_and_stream(
 
         await reply.edit(_.translate_chat("streamTGError", cid=reply.chat.id))  # type: ignore
 
-        raise e
-
 
 async def parse_telegram_url_and_download(
     source: Message,
@@ -187,8 +185,6 @@ async def parse_telegram_url_and_download(
             )
 
         await reply.edit(_.translate_chat("streamTGError", cid=reply.chat.id))  # type: ignore
-
-        raise e
 
 
 def escape_file_name(name: str, id: str):

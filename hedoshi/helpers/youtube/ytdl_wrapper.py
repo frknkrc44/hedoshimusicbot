@@ -212,7 +212,6 @@ async def download_media(
 
                 try_count = try_count + 1
             except BaseException:
-                print(format_exc())
                 try_count = try_count + 1
 
     opts = {
