@@ -79,7 +79,7 @@ async def parse_telegram_url_and_stream(
     ):
         return  # type: ignore
 
-    chat_id, message_id, _ = parse_telegram_url(url)  # type: ignore
+    chat_id, message_id, __ = parse_telegram_url(url)  # type: ignore
 
     if not chat_id or not message_id:
         return
@@ -142,7 +142,7 @@ async def parse_telegram_url_and_download(
     ):
         return None
 
-    chat_id, message_id, _ = parse_telegram_url(url)  # type: ignore
+    chat_id, message_id, __ = parse_telegram_url(url)  # type: ignore
 
     if not chat_id or not message_id:
         return None
