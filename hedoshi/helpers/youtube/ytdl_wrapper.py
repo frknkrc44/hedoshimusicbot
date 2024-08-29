@@ -13,7 +13,6 @@ from logging import info
 from os import getcwd, sep
 from os.path import exists
 from re import match
-from traceback import format_exc
 from typing import Dict, Optional, Tuple
 
 import yt_dlp.extractor.extractors as ex

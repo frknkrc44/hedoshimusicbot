@@ -7,8 +7,6 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from traceback import format_exc
-
 from pyrogram.types import Message
 from pytgcalls.types import StreamAudioEnded
 

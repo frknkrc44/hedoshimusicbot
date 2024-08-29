@@ -89,10 +89,10 @@ async def join_or_change_stream(
             message.chat.id,
             stream,
         )
-    except BaseException as e:
+    except BaseException:
         clear_query(message.chat.id)
 
-        if 'msg' not in locals():
+        if "msg" not in locals():
             await reply_message(message, tr("astPlayFail"))
         else:
             await locals()["msg"].edit(tr("astPlayFail"))

@@ -13,7 +13,6 @@ from os import getcwd, remove, sep
 from os.path import exists, getsize
 from random import shuffle
 from re import match
-from traceback import format_exc
 from typing import Callable, Dict, List, Optional, Tuple
 
 from httpx import URL, AsyncClient

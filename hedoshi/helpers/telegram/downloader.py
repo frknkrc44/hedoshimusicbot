@@ -109,7 +109,7 @@ async def parse_telegram_url_and_stream(
             url,
         )
         return
-    except BaseException as e:
+    except BaseException:
         remove_pre_query(
             source.chat.id,
             url,
@@ -170,7 +170,7 @@ async def parse_telegram_url_and_download(
         )
 
         return ret
-    except BaseException as e:
+    except BaseException:
         remove_pre_query(
             source.chat.id,
             url,
