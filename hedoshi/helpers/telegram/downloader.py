@@ -24,8 +24,7 @@ from ..ffmpeg.ffprobe import get_audio_params, get_duration, get_resolution
 from ..format import time_format
 from ..pre_query import insert_pre_query, remove_pre_query
 from ..query_item import QueryItem
-from .groups import (find_active_userbot_client, get_client,
-                     join_or_change_stream, userbots)
+from .groups import find_active_userbot_client, join_or_change_stream
 
 
 async def _progress_func_wrapper(reply: Message, current: int, total: int, upload: bool = False) -> None:
@@ -67,7 +66,11 @@ def parse_telegram_url(url: str) -> Optional[Tuple[str | int | None]]:
 
 
 async def parse_telegram_url_and_stream(
-    source: Message, reply: Message, url: str, is_video: bool
+    source: Message,
+    reply: Message,
+    url: str,
+    is_video: bool,
+    use_userbot=True,
 ) -> None:
     if insert_pre_query(
         source.chat.id,
@@ -81,42 +84,56 @@ async def parse_telegram_url_and_stream(
     if not chat_id or not message_id:
         return
 
-    for item in userbots:
-        client: Client = get_client(item)
+    client: Client = reply._client
+    if use_userbot:
+        userbot = await find_active_userbot_client(source)
+        if userbot:
+            client = userbot
 
-        try:
-            msg = await client.get_messages(
-                chat_id=chat_id,
-                message_ids=message_id,
-            )
+    try:
+        msg = await client.get_messages(
+            chat_id=chat_id,
+            message_ids=message_id,
+        )
 
-            await download_and_start_tg_media(
-                reply=reply,
-                source=msg,  # type: ignore
-                use_userbot=True,
-                userbot=client,
-                is_video=is_video,
-            )
+        await download_and_start_tg_media(
+            reply=reply,
+            source=msg,  # type: ignore
+            use_userbot=use_userbot,
+            userbot=client,
+            is_video=is_video,
+        )
 
-            remove_pre_query(
-                source.chat.id,
+        remove_pre_query(
+            source.chat.id,
+            url,
+        )
+        return
+    except BaseException as e:
+        remove_pre_query(
+            source.chat.id,
+            url,
+        )
+
+        if use_userbot:
+            return await parse_telegram_url_and_stream(
+                source,
+                reply,
                 url,
+                is_video,
+                use_userbot=False,
             )
-            return
-        except BaseException as e:
-            raise e
 
-    remove_pre_query(
-        source.chat.id,
-        url,
-    )
+        await reply.edit(_.translate_chat("streamTGError", cid=reply.chat.id))  # type: ignore
 
-    await reply.edit(
-        _.translate_chat('streamTGError', cid=reply.chat.id))  # type: ignore
+        raise e
 
 
 async def parse_telegram_url_and_download(
-    source: Message, reply: Message, url: str
+    source: Message,
+    reply: Message,
+    url: str,
+    use_userbot: bool = True,
 ) -> Optional[str]:
     if insert_pre_query(
         source.chat.id,
@@ -130,39 +147,48 @@ async def parse_telegram_url_and_download(
     if not chat_id or not message_id:
         return None
 
-    for item in userbots:
-        client: Client = get_client(item)
+    client: Client = reply._client
+    if use_userbot:
+        userbot = await find_active_userbot_client(source)
+        if userbot:
+            client = userbot
 
-        try:
-            msg = await client.get_messages(
-                chat_id=chat_id,
-                message_ids=message_id,
-            )
+    try:
+        msg = await client.get_messages(
+            chat_id=chat_id,
+            message_ids=message_id,
+        )
 
-            ret = await download_tg_media(
-                reply=reply,
-                source=msg,  # type: ignore
-                use_userbot=True,
-                userbot=client,
-            )
+        ret = await download_tg_media(
+            reply=reply,
+            source=msg,  # type: ignore
+            use_userbot=True,
+            userbot=client,
+        )
 
-            remove_pre_query(
-                source.chat.id,
+        remove_pre_query(
+            source.chat.id,
+            url,
+        )
+
+        return ret
+    except BaseException as e:
+        remove_pre_query(
+            source.chat.id,
+            url,
+        )
+
+        if use_userbot:
+            return await parse_telegram_url_and_download(
+                source,
+                reply,
                 url,
+                use_userbot=False,
             )
 
-            return ret
-        except BaseException as e:
-            raise e
+        await reply.edit(_.translate_chat("streamTGError", cid=reply.chat.id))  # type: ignore
 
-    remove_pre_query(
-        source.chat.id,
-        url,
-    )
-
-    await reply.edit(
-        _.translate_chat('streamTGError', cid=reply.chat.id))  # type: ignore
-    return None
+        raise e
 
 
 def escape_file_name(name: str, id: str):
@@ -266,7 +292,6 @@ async def download_tg_media(
                 reply=reply,
                 source=source,
                 use_userbot=False,
-                userbot=userbot,
             )
     else:
         path = get_downloaded_file_name(source) or (
