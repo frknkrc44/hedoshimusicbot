@@ -216,7 +216,6 @@ async def download_media(
                 try_count = try_count + 1
 
     opts = {
-        "concurrent_fragment_downloads": 2,
         "ignoreerrors": True,
         "outtmpl": f'{getcwd()}{sep}downloads{sep}%(id)s-{"a" if audio else "v"}.%(ext)s',
         "cachedir": f"{getcwd()}{sep}downloads",
@@ -229,7 +228,9 @@ async def download_media(
     if audio:
         opts["format"] = "bestaudio/m4a/worstvideo/worst/source"
     else:
-        opts["format"] = "bestvideo[height<=1080]+bestaudio/best/source"
+        opts["format"] = (
+            "bestvideo[height<=1080][protocol!*=m3u8]+bestaudio/bestvideo[height<=1080]+bestaudio/best/source"
+        )
 
     filename_collector = FilenameCollectorPP(audio)
 
