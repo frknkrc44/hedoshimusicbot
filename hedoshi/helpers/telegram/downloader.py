@@ -89,12 +89,18 @@ async def parse_telegram_url_and_stream(
                 chat_id=chat_id,
                 message_ids=message_id,
             )
+
             await download_and_start_tg_media(
                 reply=reply,
                 source=msg,  # type: ignore
                 use_userbot=True,
                 userbot=client,
                 is_video=is_video,
+            )
+
+            remove_pre_query(
+                source.chat.id,
+                url,
             )
             return
         except BaseException as e:
@@ -132,12 +138,20 @@ async def parse_telegram_url_and_download(
                 chat_id=chat_id,
                 message_ids=message_id,
             )
-            return await download_tg_media(
+
+            ret = await download_tg_media(
                 reply=reply,
                 source=msg,  # type: ignore
                 use_userbot=True,
                 userbot=client,
             )
+
+            remove_pre_query(
+                source.chat.id,
+                url,
+            )
+
+            return ret
         except BaseException as e:
             raise e
 
