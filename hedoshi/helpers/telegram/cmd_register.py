@@ -9,8 +9,9 @@
 
 from logging import info
 from traceback import format_exc
+from time import time
 from types import FunctionType
-from typing import Optional
+from typing import Dict, Optional
 
 from pyrogram import Client, ContinuePropagation, StopPropagation, filters
 from pyrogram.enums import ChatType
@@ -45,6 +46,9 @@ async def is_bot_admin(chat: Chat):
         return False
 
 
+chat_command_time: Dict[int, float] = {}
+
+
 def register(
     cmd: Optional[str],
     admin: bool = False,
@@ -75,12 +79,22 @@ def register(
     if owner:
         filter &= filters.user(bot_owner)
 
+    spam_timeout: int = (
+        bot_config.BOT_SPAM_TIMEOUT if hasattr(bot_config, "BOT_SPAM_TIMEOUT") else 2
+    )
+
     def msg_decorator(func: FunctionType):
         async def msg_handler(client: Client, message: Message):
             if message.empty or not message.chat:
                 return
 
             if message.chat.type == ChatType.CHANNEL:
+                return
+
+            calculated_time_diff = time() - chat_command_time.get(message.chat.id, 0)
+            if calculated_time_diff > spam_timeout:
+                chat_command_time[message.chat.id] = time()
+            else:
                 return
 
             if message.chat.type in (ChatType.GROUP, ChatType.SUPERGROUP) and not group:

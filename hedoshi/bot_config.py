@@ -13,11 +13,10 @@ from dotenv import dotenv_values
 
 working_proxies = []
 
-values = dotenv_values('config.env')
-locals()['_example_var'] = '__REMOVE_THIS_BEFORE_EDIT__'
+values = dotenv_values("config.env")
 
-if _example_var in values:  # type: ignore # noqa: F821
-    error(f"Please remove {_example_var}!")  # type: ignore # noqa: F821
+if "__REMOVE_THIS_BEFORE_EDIT__" in values:
+    error("Please remove __REMOVE_THIS_BEFORE_EDIT__!")
     quit()
 
 # add all env values as global import
