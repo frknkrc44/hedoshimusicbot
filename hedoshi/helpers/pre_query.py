@@ -1,4 +1,3 @@
-from functools import lru_cache
 from json import dumps
 from logging import info
 from typing import List
@@ -28,9 +27,9 @@ class PreQueryList(List[PreQueryItem]):
     def pre_queries_by_chat(self, chat_id: int) -> List[PreQueryItem]:
         return [item for item in self if item.chat_id == chat_id]
 
-    def contains_chat(self, chat_id: int):
+    def contains_chat_link(self, chat_id: int, link: str):
         return next(
-            (item for item in self if item.chat_id == chat_id),
+            (item for item in self if item.chat_id == chat_id and item.link == link),
             None,
         )
 
@@ -48,19 +47,8 @@ class PreQueryList(List[PreQueryItem]):
 __query = PreQueryList()
 
 
-@lru_cache()
-def __is_spam_protection_enabled() -> bool:
-    from ..bot_config import values
-
-    return values.get("BOT_USE_SPAM_PROTECTION", "False") == "True"
-
-
-def __is_requested(chat_id: int):
-    protection_enabled = __is_spam_protection_enabled()
-    if not protection_enabled:
-        return False
-
-    return __query.contains_chat(chat_id)
+def __is_requested(chat_id: int, link: str):
+    return __query.contains_chat_link(chat_id, link)
 
 
 def get_pre_queries_by_chat(chat_id: int):
@@ -68,7 +56,7 @@ def get_pre_queries_by_chat(chat_id: int):
 
 
 def insert_pre_query(chat_id: int, link: str, requester_id: int):
-    if __is_requested(chat_id):
+    if __is_requested(chat_id, link):
         return True
 
     __query.append(PreQueryItem(chat_id, link, requester_id))
