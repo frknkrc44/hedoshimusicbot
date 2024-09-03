@@ -88,7 +88,7 @@ def is_valid_invidious_match(url: str):
     return match(YoutubeIE._VALID_URL, url)
 
 
-async def __youtube2invidious(url: str, audio: bool):
+async def __youtube2invidious(url: str, audio: bool, max_video_quality: int):
     if is_valid_invidious_match(url):
         try_count = 0
 
@@ -163,7 +163,10 @@ async def __youtube2invidious(url: str, audio: bool):
                                 container,
                             )
                         else:
-                            audio_url, video_url, container = __get_video_url(out_json)
+                            audio_url, video_url, container = __get_video_url(
+                                out_json,
+                                max_video_quality,
+                            )
 
                             return (
                                 video_id,
@@ -200,7 +203,10 @@ def __get_audio_url(out_json: Dict) -> Optional[Tuple[str, str]]:
     return last_audio["url"], last_audio["container"]
 
 
-def __get_video_url(out_json: Dict) -> Optional[Tuple[str, str, str]]:
+def __get_video_url(
+    out_json: Dict,
+    max_video_quality: int,
+) -> Optional[Tuple[str, str, str]]:
     formats = out_json["adaptiveFormats"]
     last_audio = None
     last_video = None
@@ -211,8 +217,9 @@ def __get_video_url(out_json: Dict) -> Optional[Tuple[str, str, str]]:
         else:
             last_video = item
 
-            # limit max to 1080p
-            if item.get("resolution") == "1080p" or item.get("qualityLabel") == "1080p":
+            # limit max to max_video_quality
+            quality = f"{max_video_quality}p"
+            if item.get("resolution") == quality or item.get("qualityLabel") == quality:
                 break
 
     if "container" not in last_video:
@@ -239,8 +246,9 @@ async def download_from_invidious(
     audio: bool,
     progress_hook: Callable[[int, int], None],
     proxy: Optional[str],
+    max_video_quality: int = 1080,
 ) -> Optional[Tuple[str, str]]:
-    result = await __youtube2invidious(url, audio)
+    result = await __youtube2invidious(url, audio, max_video_quality)
 
     if result:
         video_id, title, author, audio_url, video_url, ext = result

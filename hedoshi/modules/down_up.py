@@ -76,7 +76,7 @@ async def download(message: Message):
 
                 if youtube.is_valid(search):
                     path = await youtube.download_media(message, msg, search)
-                    if path:
+                    if path and path[0]:
                         return await upload_file_or_send_message(path[0])
 
     await edit_message(msg, _.translate_chat("streamNoSrc", cid=message.chat.id))

@@ -112,17 +112,11 @@ async def edit_message(
             reply_markup=reply_markup,
         )
     except FloodWait as e:
-        print("Flood wait:", e.value)
-        await sleep(e.value)
+        print(f"Flood wait for {e.value}, ignored editing message")
 
-        return await edit_message(
-            message=message,
-            text=text,
-            parse_mode=parse_mode,
-            entities=entities,
-            disable_web_page_preview=disable_web_page_preview,
-            reply_markup=reply_markup,
-        )
+        return message
     except BaseException:
+        print("An unknown error occurred, ignored editing message")
         print(format_exc())
-        raise ContinuePropagation
+
+        return message

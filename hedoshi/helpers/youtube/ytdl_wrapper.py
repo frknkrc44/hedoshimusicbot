@@ -13,6 +13,7 @@ from logging import info
 from os import getcwd, sep
 from os.path import exists
 from re import match
+from traceback import format_exception
 from typing import Dict, Optional, Tuple
 
 import yt_dlp.extractor.extractors as ex
@@ -34,16 +35,6 @@ yt_valid_ends = [
 
 def set_httpx_handler():
     from ... import bot_config
-
-    """
-    ytdl_cookie_file = (
-        bot_config.YTDL_COOKIE_FILE if hasattr(bot_config, "YTDL_COOKIE_FILE") else None
-    )
-
-    if ytdl_cookie_file and exists(ytdl_cookie_file):
-        print("YT-DLP will NOT use HTTPX due to cookies")
-        return
-    """
 
     use_httpx = (
         bot_config.YTDL_USE_HTTPX if hasattr(bot_config, "YTDL_USE_HTTPX") else False
@@ -186,6 +177,15 @@ async def download_media(
         bot_config.BOT_USE_PROXY if hasattr(bot_config, "BOT_USE_PROXY") else False
     )
 
+    max_video_quality = (
+        bot_config.BOT_MAX_VIDEO_QUALITY
+        if hasattr(bot_config, "BOT_MAX_VIDEO_QUALITY")
+        else 1080
+    )
+
+    if max_video_quality not in (144, 240, 360, 480, 720, 1080, 2160):
+        max_video_quality = 1080
+
     if use_invidious and is_valid_invidious_match(url):
         try_count = 0
         while try_count < 10:
@@ -199,6 +199,7 @@ async def download_media(
                     audio,
                     invidious_progress_hook,
                     proxy,
+                    max_video_quality=max_video_quality,
                 )
 
                 if try_invidious:
@@ -210,7 +211,8 @@ async def download_media(
                     return try_invidious
 
                 try_count = try_count + 1
-            except BaseException:
+            except BaseException as e:
+                print(format_exception(e))
                 try_count = try_count + 1
 
     opts = {
@@ -227,7 +229,7 @@ async def download_media(
         opts["format"] = "bestaudio/m4a/worstvideo/worst/source"
     else:
         opts["format"] = (
-            "bestvideo[height<=1080][protocol!*=m3u8]+bestaudio/bestvideo[height<=1080]+bestaudio/best/source"
+            f"bestvideo[height<={max_video_quality}][protocol!*=m3u8]+bestaudio/bestvideo[height<={max_video_quality}]+bestaudio/best/source"
         )
 
     filename_collector = FilenameCollectorPP(audio)
