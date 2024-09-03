@@ -28,6 +28,17 @@ from .groups import find_active_userbot_client, join_or_change_stream
 
 
 async def _progress_func_wrapper(reply: Message, current: int, total: int, upload: bool = False) -> None:
+    from ... import bot_config
+
+    ignore_progress = (
+        bot_config.BOT_IGNORE_PROGRESS
+        if hasattr(bot_config, "BOT_IGNORE_PROGRESS")
+        else False
+    )
+
+    if ignore_progress:
+        return
+
     percent = int((current / total) * 100)
     last_percent = globals().get(f"last_percent_{reply.chat.id}_{reply.id}", -1)
     last_epoch: int = globals().get(f"last_percent_epoch_{reply.chat.id}_{reply.id}", 0)
