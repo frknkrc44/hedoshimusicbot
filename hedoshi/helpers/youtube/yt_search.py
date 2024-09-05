@@ -110,7 +110,13 @@ async def search_query(source: Message, query: str) -> Optional[str]:
 
     tag = 'ytInitialData'
 
-    while tag not in (res := await send_query()).text:
+    try_count = 0
+    while not (res := await send_query()) or tag not in res.text:
+        try_count += 1
+
+        if try_count > 3:
+            return None
+
         sleep(1)
 
     remove_pre_query(
