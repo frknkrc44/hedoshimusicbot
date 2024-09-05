@@ -115,7 +115,14 @@ async def search_query(source: Message, query: str) -> Optional[str]:
         try_count += 1
 
         if try_count > 3:
-            return None
+            result = await search_invidious(query)
+
+            remove_pre_query(
+                source.chat.id,
+                query,
+            )
+
+            return result
 
         sleep(1)
 
