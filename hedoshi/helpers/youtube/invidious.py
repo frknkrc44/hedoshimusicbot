@@ -122,7 +122,7 @@ async def __youtube2invidious(url: str, audio: bool, max_video_quality: int):
             videos_url = f"{mirror}/api/v1/videos/{video_id}"
 
             try:
-                async with AsyncClient(timeout=30) as http:
+                async with AsyncClient(timeout=5) as http:
                     req = await http.get(videos_url)
                     try:
                         out_json = req.json()
