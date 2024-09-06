@@ -52,6 +52,16 @@ async def _progress_func_wrapper(reply: Message, current: int, total: int, uploa
         except BaseException:
             pass
 
+def clean_percent_record(chat_id: int, msg_id: int):
+    key1 = f"last_percent_{chat_id}_{msg_id}"
+    key2 = f"last_percent_epoch_{chat_id}_{msg_id}"
+
+    if key1 in globals():
+        del globals()[key1]
+
+    if key2 in globals():
+        del globals()[key2]
+
 
 def parse_telegram_url(url: str) -> Optional[Tuple[str | int | None]]:
     valid_telegram_domains = [
@@ -291,8 +301,7 @@ async def download_tg_media(
                 )
             )
 
-            del globals()[f"last_percent_{reply.chat.id}_{reply.id}"]
-            del globals()[f"last_percent_epoch_{reply.chat.id}_{reply.id}"]
+            clean_percent_record(reply.chat.id, reply.id)
         else:
             await reply.edit(_.translate_chat('streamDLNoUserbot', cid=reply.chat.id))
             return await download_tg_media(
@@ -309,8 +318,7 @@ async def download_tg_media(
             )
         )
 
-        del globals()[f"last_percent_{reply.chat.id}_{reply.id}"]
-        del globals()[f"last_percent_epoch_{reply.chat.id}_{reply.id}"]
+        clean_percent_record(reply.chat.id, reply.id)
 
     return path  # type: ignore
 
@@ -336,8 +344,7 @@ async def upload_tg_media(
                 reply_to_message_id=reply.id,
             )
 
-            del globals()[f"last_percent_{reply.chat.id}_{reply.id}"]
-            del globals()[f"last_percent_epoch_{reply.chat.id}_{reply.id}"]
+            clean_percent_record(reply.chat.id, reply.id)
 
             return ret
         else:
@@ -349,15 +356,13 @@ async def upload_tg_media(
                 userbot=userbot,
             )
 
-            del globals()[f"last_percent_{reply.chat.id}_{reply.id}"]
-            del globals()[f"last_percent_epoch_{reply.chat.id}_{reply.id}"]
+            clean_percent_record(reply.chat.id, reply.id)
 
             return ret
     else:
         ret = await reply.reply_document(path, progress=progress_func)
 
-        del globals()[f"last_percent_{reply.chat.id}_{reply.id}"]
-        del globals()[f"last_percent_epoch_{reply.chat.id}_{reply.id}"]
+        clean_percent_record(reply.chat.id, reply.id)
 
         return ret
 
