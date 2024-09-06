@@ -23,7 +23,7 @@
     "streamBackSeeked": "Akış geri sarıldı!",
     "streamNoSrc": "Hiçbir kaynak belirtilmedi!",
     "streamError": "Akış başlatılırken bir hata oluştu",
-    "streamTGError": "Telegram'dan dosya indirilirken bir hata oluştu",
+    "streamTGError": "Dosya indirilirken bir hata oluştu",
     "streamDLNoUserbot": "Aktif bir asistan bulunamadı, bot yardımıyla indirme deneniyor...",
     "queryEmpty": "Akış listesi boş",
     "queryCurrent": "Şu anda oynatılan",

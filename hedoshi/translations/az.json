@@ -23,7 +23,7 @@
     "streamBackSeeked": "Axın geri çəkildi!",
     "streamNoSrc": "Heç bir mənbə göstərilməyib!",
     "streamError": "Axın başlarkən bir səhv meydana gəldi",
-    "streamTGError": "Telegramdan fayl yüklənərkən bir səhv meydana gəldi",
+    "streamTGError": "Fayl yüklənərkən bir səhv meydana gəldi",
     "streamDLNoUserbot": "Aktiv bir köməkçi tapılmadı, bot köməyi ilə yükləmə yoxlanılır...",
     "queryEmpty": "Axın siyahısı boşdur",
     "queryCurrent": "Hal-hazırda çalınan",
