@@ -12,7 +12,12 @@ from typing import Optional
 from pyrogram import Client
 from pyrogram.types import Chat, Message, User
 from pytgcalls import PyTgCalls
-from pytgcalls.types import MediaStream, StreamAudioEnded, Update
+from pytgcalls.types import (
+    MediaStream,
+    StreamAudioEnded,
+    ChatUpdate,
+    Update,
+)
 
 from ...translations import translator as _
 from .. import userbots
@@ -165,25 +170,32 @@ async def stream_end(
 ) -> None:
     # if video stream ends, StreamAudioEnded and StreamVideoEnded is invoked
     # so we can ignore the video stream end signal
-    if type(update) != StreamAudioEnded:  # noqa: E721
+    update_type = type(update)
+    if update_type not in [StreamAudioEnded, ChatUpdate]:  # noqa: E721
         return
 
     item = get_next_query(update.chat_id)
-    if item and item.loop and not force_skip:
-        item.skip = 0
-        item.stream = MediaStream(
-            item.stream._media_path,
-            video_flags=MediaStream.Flags.IGNORE
-            if not item.video
-            else MediaStream.Flags.AUTO_DETECT,
-            audio_parameters=item.stream._audio_parameters,
-            video_parameters=item.stream._video_parameters,
-        )
-    else:
-        for i in range(skip_count):
-            get_next_query(update.chat_id, True)
+    item_available = item is not None
 
-        item = get_next_query(update.chat_id)
+    if item_available:
+        if item.loop and not force_skip:
+            item.skip = 0
+            item.stream = MediaStream(
+                item.stream._media_path,
+                video_flags=MediaStream.Flags.IGNORE
+                if not item.video
+                else MediaStream.Flags.AUTO_DETECT,
+                audio_parameters=item.stream._audio_parameters,
+                video_parameters=item.stream._video_parameters,
+            )
+        else:
+            for i in range(min(skip_count, len(query))):
+                get_next_query(update.chat_id, True)
+
+            item = get_next_query(update.chat_id)
+
+    if not item_available and update_type == ChatUpdate:
+        return
 
     from ... import bot
 
@@ -212,4 +224,13 @@ async def stream_end(
 
     await bot.send_message(
         update.chat_id, text=_.translate_chat("streamEnd", cid=update.chat_id)
+    )
+
+
+async def vc_closed(client: PyTgCalls, update: Update):
+    await stream_end(
+        client,
+        update,
+        force_skip=True,
+        skip_count=99999999,
     )

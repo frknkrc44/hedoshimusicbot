@@ -20,6 +20,7 @@ from typing import Callable
 from pyrogram import Client
 from pytgcalls import PyTgCalls
 from pytgcalls import filters as CallFilters
+from pytgcalls.types import ChatUpdate
 
 from .helpers import userbots
 
@@ -132,6 +133,7 @@ async def add_assistants():
                 api_hash=bot.api_hash,
                 session_string=getattr(bot_config, key),
             )
+
             getLogger("pyrogram.connection.transport.tcp.tcp").addHandler(
                 MyNullHandler(
                     on_trigger=reconnect(app),
@@ -139,9 +141,13 @@ async def add_assistants():
             )
             calls = PyTgCalls(app)
 
-            from .helpers.telegram.groups import stream_end
+            from .helpers.telegram.groups import stream_end, vc_closed
 
             calls.add_handler(CallFilters.stream_end, stream_end)
+            calls.add_handler(
+                CallFilters.chat_update(ChatUpdate.Status.CLOSED_VOICE_CHAT),
+                vc_closed,
+            )
 
             calls.start()
             userbots.append(calls)
