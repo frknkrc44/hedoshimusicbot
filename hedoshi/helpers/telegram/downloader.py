@@ -208,10 +208,6 @@ async def parse_telegram_url_and_download(
         await reply.edit(_.translate_chat("streamTGError", cid=reply.chat.id))  # type: ignore
 
 
-def escape_file_name(name: str, id: str):
-    return f"downloads{sep}{id}{name[name.rfind('.'):]}"
-
-
 def __get_raw_file_name(source: Message):
     match source.media:
         case MessageMediaType.AUDIO:
@@ -241,40 +237,30 @@ def get_downloaded_file_name(
     source: Message,
     force_return: bool = False,
 ) -> Optional[str]:
+    def escape_file_name(name: str, id: str):
+        return f"downloads{sep}{id}{name[name.rfind('.'):]}"
+
+    escaped_name: Optional[str] = None
+
     match source.media:
         case MessageMediaType.AUDIO:
             escaped_name = escape_file_name(
-                source.audio.file_name
-                or __get_file_from_id_mimetype(
-                    source.audio.file_unique_id,
-                    source.audio.mime_type,
-                ),
-                source.audio.file_unique_id,
+                source.audio.file_name,
+                source.audio.file_unique_id or source.audio.file_id,
             )
-            if exists(escaped_name) or force_return:
-                return escaped_name
         case MessageMediaType.DOCUMENT:
             escaped_name = escape_file_name(
-                source.document.file_name
-                or __get_file_from_id_mimetype(
-                    source.document.file_unique_id,
-                    source.document.mime_type,
-                ),
-                source.document.file_unique_id,
+                source.document.file_name,
+                source.document.file_unique_id or source.document.file_id,
             )
-            if exists(escaped_name) or force_return:
-                return escaped_name
         case MessageMediaType.VIDEO:
             escaped_name = escape_file_name(
-                source.video.file_name
-                or __get_file_from_id_mimetype(
-                    source.video.file_unique_id,
-                    source.video.mime_type,
-                ),
-                source.video.file_unique_id,
+                source.video.file_name,
+                source.video.file_unique_id or source.video.file_id,
             )
-            if exists(escaped_name) or force_return:
-                return escaped_name
+
+    if exists(escaped_name) or force_return:
+        return escaped_name
 
     return None
 
@@ -293,15 +279,16 @@ async def download_tg_media(
             userbot = await find_active_userbot_client(reply)
 
         if userbot:
-            path = get_downloaded_file_name(source) or (
+            path: Optional[str] = get_downloaded_file_name(source) or (
                 await userbot.download_media(
                     source,
                     progress=progress_func,
-                    file_name=get_downloaded_file_name(source, True),
+                    file_name=get_downloaded_file_name(
+                        source,
+                        force_return=True,
+                    ),
                 )
             )
-
-            clean_percent_record(reply.chat.id, reply.id)
         else:
             await reply.edit(_.translate_chat('streamDLNoUserbot', cid=reply.chat.id))
             return await download_tg_media(
@@ -310,17 +297,20 @@ async def download_tg_media(
                 use_userbot=False,
             )
     else:
-        path = get_downloaded_file_name(source) or (
+        path: Optional[str] = get_downloaded_file_name(source) or (
             await reply._client.download_media(
                 source,
                 progress=progress_func,
-                file_name=get_downloaded_file_name(source, True),
+                file_name=get_downloaded_file_name(
+                    source,
+                    force_return=True,
+                ),
             )
         )
 
-        clean_percent_record(reply.chat.id, reply.id)
+    clean_percent_record(reply.chat.id, reply.id)
 
-    return path  # type: ignore
+    return path
 
 
 async def upload_tg_media(
