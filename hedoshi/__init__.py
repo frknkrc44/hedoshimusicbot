@@ -141,9 +141,9 @@ async def add_assistants():
             )
             calls = PyTgCalls(app)
 
-            from .helpers.telegram.groups import stream_end, vc_closed
+            from .helpers.telegram.groups import end_stream, vc_closed
 
-            calls.add_handler(CallFilters.stream_end, stream_end)
+            calls.add_handler(CallFilters.stream_end, end_stream)
             calls.add_handler(
                 CallFilters.chat_update(ChatUpdate.Status.CLOSED_VOICE_CHAT),
                 vc_closed,

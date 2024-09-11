@@ -17,14 +17,10 @@ from typing import Optional, Tuple
 from pyrogram import Client
 from pyrogram.enums import MessageMediaType
 from pyrogram.types import Message
-from pytgcalls.types import MediaStream, VideoQuality
 
 from ...translations import translator as _
-from ..ffmpeg.ffprobe import get_audio_params, get_duration, get_resolution
-from ..format import time_format
 from ..pre_query import insert_pre_query, remove_pre_query
-from ..query_item import QueryItem
-from .groups import find_active_userbot_client, join_or_change_stream
+from .groups import find_active_userbot_client, start_stream
 
 
 async def _progress_func_wrapper(reply: Message, current: int, total: int, upload: bool = False) -> None:
@@ -43,7 +39,7 @@ async def _progress_func_wrapper(reply: Message, current: int, total: int, uploa
     last_percent = globals().get(f"last_percent_{reply.chat.id}_{reply.id}", -1)
     last_epoch: int = globals().get(f"last_percent_epoch_{reply.chat.id}_{reply.id}", 0)
     current_epoch = int(time())
-    if percent > last_percent and (current_epoch - last_epoch) > 3:
+    if percent != last_percent and (current_epoch - last_epoch) > 3:
         globals()[f"last_percent_{reply.chat.id}_{reply.id}"] = percent
         globals()[f"last_percent_epoch_{reply.chat.id}_{reply.id}"] = current_epoch
 
@@ -373,48 +369,3 @@ async def download_and_start_tg_media(
         __get_raw_file_name(source),
     )  # type: ignore
 
-
-async def start_stream(
-    reply: Message,
-    path: str,
-    is_video: bool,
-    file_name: str,
-) -> None:
-    if path:
-        video_params = get_resolution(path) if is_video else None
-        audio_params = get_audio_params(path)
-
-        item = await join_or_change_stream(
-            reply,
-            MediaStream(
-                path,
-                video_flags=MediaStream.Flags.IGNORE
-                if not is_video
-                else MediaStream.Flags.AUTO_DETECT,
-                audio_parameters=audio_params,
-                video_parameters=video_params or VideoQuality.SD_480p,
-            ),
-            file_name,
-            video=is_video,
-        )
-
-        arg: Optional[str] = None
-        try:
-            arg = QueryItem.query_details_static(
-                reply.chat.id,
-                file_name,
-                time_format(get_duration(path)),
-            )
-        except BaseException:
-            pass
-
-        await reply.edit(
-            _.translate_chat(
-                "streamQueryAdded" if item else "streamStarted",
-                cid=reply.chat.id,
-                args=[arg],
-            ),
-        )
-    else:
-        await reply.edit(_.translate_chat('streamTGError', cid=reply.chat.id))
-        return

@@ -16,7 +16,7 @@ from ..translations import translator as _
 
 
 @register(cmd='resume|devam')
-async def play(message: Message):
+async def resume(message: Message):
     userbot = await find_active_userbot(message)
     if userbot:
         try:

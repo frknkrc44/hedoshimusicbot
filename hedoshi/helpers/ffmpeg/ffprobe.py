@@ -64,8 +64,8 @@ def get_audio_params(path: str) -> AudioParameters:
 
     out_split = res.stdout.decode().split("x")
     return AudioParameters(
-        bitrate=__parse_int(out_split[0]),
-        channels=__parse_int(out_split[1]),
+        bitrate=__parse_int(out_split[0], 44100),
+        channels=__parse_int(out_split[1], 2),
     )
 
 
@@ -98,23 +98,26 @@ def get_resolution(path: str) -> VideoParameters:
     if len(out_split) > 2:
         rate_split = out_split[2].split("/")
 
-        rate_parsed = __parse_int(rate_split[0]) // __parse_int(rate_split[1])
+        rate_parsed = __parse_int(rate_split[0], 20) // __parse_int(rate_split[1], 1)
     else:
         rate_parsed = 20
 
     return VideoParameters(
-        width=int(out_split[0]),
-        height=int(out_split[1]),
+        width=__parse_int(out_split[0]),
+        height=__parse_int(out_split[1]),
         frame_rate=rate_parsed,
     )
 
-def __parse_int(item: str):
-    item = item.strip()
+def __parse_int(item: str, default: int = 0):
+    try:
+        item = item.strip()
 
-    if not len(item):
-        return 1
+        if not len(item):
+            return default
 
-    if "\n" in item:
-        return int(item[item.find("\n") + 1 :])
+        if "\n" in item:
+            return int(item[item.find("\n") + 1 :])
 
-    return int(item)
+        return int(item)
+    except BaseException:
+        return default

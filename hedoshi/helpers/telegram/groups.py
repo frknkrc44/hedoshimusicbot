@@ -14,15 +14,17 @@ from pyrogram import Client
 from pyrogram.types import Chat, Message, User
 from pytgcalls import PyTgCalls
 from pytgcalls.types import (
+    ChatUpdate,
     MediaStream,
     StreamAudioEnded,
-    ChatUpdate,
     Update,
+    VideoQuality,
 )
 
 from ...translations import translator as _
 from .. import userbots
-from ..ffmpeg.ffprobe import get_duration
+from ..ffmpeg.ffprobe import get_audio_params, get_duration, get_resolution
+from ..format import time_format
 from ..query import clear_query, get_next_query, query
 from ..query_item import QueryItem
 from .msg_funcs import reply_message
@@ -163,7 +165,54 @@ async def get_current_duration(message: Message) -> Optional[int]:
     return None
 
 
-async def stream_end(
+async def start_stream(
+    reply: Message,
+    path: str,
+    is_video: bool,
+    file_name: str,
+) -> None:
+    if path:
+        video_params = get_resolution(path) if is_video else None
+        audio_params = get_audio_params(path)
+
+        item = await join_or_change_stream(
+            reply,
+            MediaStream(
+                path,
+                video_flags=MediaStream.Flags.IGNORE
+                if not is_video
+                else MediaStream.Flags.AUTO_DETECT,
+                audio_parameters=audio_params,
+                video_parameters=video_params or VideoQuality.SD_480p,
+            ),
+            file_name,
+            video=is_video,
+        )
+
+        arg: Optional[str] = None
+        try:
+            arg = QueryItem.query_details_static(
+                reply.chat.id,
+                file_name,
+                time_format(get_duration(path)),
+            )
+        except BaseException:
+            await reply.edit(_.translate_chat("streamTGError", cid=reply.chat.id))
+            return
+
+        await reply.edit(
+            _.translate_chat(
+                "streamQueryAdded" if item else "streamStarted",
+                cid=reply.chat.id,
+                args=[arg],
+            ),
+        )
+    else:
+        await reply.edit(_.translate_chat("streamTGError", cid=reply.chat.id))
+        return
+
+
+async def end_stream(
     client: PyTgCalls,
     update: Update,
     force_skip: bool = False,
@@ -193,6 +242,8 @@ async def stream_end(
                 get_next_query(update.chat_id, True)
 
             item = get_next_query(update.chat_id)
+    elif update_type == ChatUpdate:
+        return
 
     from ... import bot
 
@@ -225,7 +276,13 @@ async def stream_end(
 
 last_vc_closed_triggered_dates: Dict[int, float] = {}
 
-async def vc_closed(client: PyTgCalls, update: Update):
+async def vc_closed(client: PyTgCalls, update: ChatUpdate):
+    if (
+        type(Update) != ChatUpdate  # noqa: E721
+        or update.status != ChatUpdate.Status.CLOSED_VOICE_CHAT
+    ):
+        return
+
     current_time = time()
 
     if update.chat_id in last_vc_closed_triggered_dates:
@@ -234,7 +291,7 @@ async def vc_closed(client: PyTgCalls, update: Update):
 
     last_vc_closed_triggered_dates[update.chat_id] = current_time
 
-    await stream_end(
+    await end_stream(
         client,
         update,
         force_skip=True,

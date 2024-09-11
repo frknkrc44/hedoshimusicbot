@@ -8,8 +8,8 @@
 #
 
 from logging import info
-from traceback import format_exc
 from time import time
+from traceback import format_exc
 from types import FunctionType
 from typing import Dict, Optional
 

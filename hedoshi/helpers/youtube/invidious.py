@@ -40,10 +40,19 @@ async def __get_valid_invidious_mirror(tried_instances: List[str]) -> Optional[s
         _, instance_options = item
         if instance_options.get("api", False) is True:
             uri = instance_options.get("uri")
-            playback_stats: float = (
-                instance_options.get("stats").get("playback").get("ratio")
-            ) or 0.5
-            if uri not in tried_instances and playback_stats >= 0.5:
+            playback_ratio = 0.5
+
+            try:
+                playback_ratio = (
+                    instance_options.get("stats").get("playback").get("ratio")
+                )
+            except BaseException:
+                pass
+
+            if not playback_ratio:
+                playback_ratio = 0.5
+
+            if uri not in tried_instances and playback_ratio >= 0.5:
                 return uri
 
     return None

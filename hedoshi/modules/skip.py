@@ -11,8 +11,8 @@ from pyrogram.types import Message
 from pytgcalls.types import StreamAudioEnded
 
 from ..helpers.telegram.cmd_register import register
-from ..helpers.telegram.groups import (find_active_userbot, is_active,
-                                       stream_end)
+from ..helpers.telegram.groups import (end_stream, find_active_userbot,
+                                       is_active)
 from ..helpers.telegram.msg_funcs import reply_message
 from ..translations import translator as _
 
@@ -31,7 +31,11 @@ async def skip(message: Message):
     if userbot:
         try:
             assert await is_active(message.chat.id, userbot)
-            await stream_end(
+
+            # resume stream before skipping
+            await userbot.resume_stream(message.chat.id)
+
+            await end_stream(
                 userbot,
                 update=StreamAudioEnded(message.chat.id),
                 force_skip=True,
