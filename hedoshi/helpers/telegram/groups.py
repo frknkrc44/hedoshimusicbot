@@ -7,7 +7,8 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from typing import Optional
+from time import time
+from typing import Dict, Optional
 
 from pyrogram import Client
 from pyrogram.types import Chat, Message, User
@@ -175,9 +176,8 @@ async def stream_end(
         return
 
     item = get_next_query(update.chat_id)
-    item_available = item is not None
 
-    if item_available:
+    if item:
         if item.loop and not force_skip:
             item.skip = 0
             item.stream = MediaStream(
@@ -193,8 +193,6 @@ async def stream_end(
                 get_next_query(update.chat_id, True)
 
             item = get_next_query(update.chat_id)
-    elif update_type == ChatUpdate:
-        return
 
     from ... import bot
 
@@ -225,8 +223,17 @@ async def stream_end(
         update.chat_id, text=_.translate_chat("streamEnd", cid=update.chat_id)
     )
 
+last_vc_closed_triggered_dates: Dict[int, float] = {}
 
 async def vc_closed(client: PyTgCalls, update: Update):
+    current_time = time()
+
+    if update.chat_id in last_vc_closed_triggered_dates:
+        if last_vc_closed_triggered_dates[update.chat_id] - current_time < 3.0:
+            return
+
+    last_vc_closed_triggered_dates[update.chat_id] = current_time
+
     await stream_end(
         client,
         update,
