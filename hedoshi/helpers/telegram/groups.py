@@ -193,8 +193,7 @@ async def stream_end(
                 get_next_query(update.chat_id, True)
 
             item = get_next_query(update.chat_id)
-
-    if not item_available and update_type == ChatUpdate:
+    elif update_type == ChatUpdate:
         return
 
     from ... import bot
