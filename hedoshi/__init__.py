@@ -7,7 +7,7 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from asyncio import iscoroutine, run
+from asyncio import run
 from asyncio import sleep as async_sleep
 from logging import (FATAL, INFO, LogRecord, NullHandler, basicConfig, error,
                      getLogger, info)
@@ -31,7 +31,7 @@ class MyNullHandler(NullHandler):
     def __init__(
         self,
         level: int | str = INFO,
-        signal_text: str = "Connection lost",
+        signal_text: str = "Connection",
         on_trigger: Callable[[], None] = None,
     ) -> None:
         super().__init__(level)
@@ -40,10 +40,7 @@ class MyNullHandler(NullHandler):
 
     def handle(self, record: LogRecord) -> bool:
         if self.signal_text in record.getMessage():
-            if iscoroutine(self.on_trigger):
-                run(self.on_trigger())
-            else:
-                self.on_trigger()
+            run(self.on_trigger())
 
         return super().handle(record)
 
@@ -86,7 +83,7 @@ def reconnect(client: Client):
     return fn
 
 
-def force_quit():
+async def force_quit():
     quit()
 
 
