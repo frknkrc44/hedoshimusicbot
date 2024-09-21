@@ -24,8 +24,8 @@ from yt_dlp.networking.common import _REQUEST_HANDLERS, register_rh
 from yt_dlp.postprocessor.common import PostProcessor
 
 from ..pre_query import insert_pre_query, remove_pre_query
+from ..progress import progress_func_wrapper
 from ..proxy import get_proxy
-from ..telegram.downloader import _progress_func_wrapper
 from .invidious import download_from_invidious, is_valid_invidious_match
 from .ytdl_httpx_handler import HTTPXRH
 
@@ -141,7 +141,7 @@ async def download_media(
         return None
 
     async def invidious_progress_hook(current: int, total: int):
-        await _progress_func_wrapper(
+        await progress_func_wrapper(
             reply,
             current,
             total,

@@ -11,7 +11,6 @@ from mimetypes import guess_extension
 from os import sep
 from os.path import exists
 from re import sub
-from time import time
 from typing import Optional, Tuple
 
 from pyrogram import Client
@@ -20,33 +19,9 @@ from pyrogram.types import Message
 
 from ...translations import translator as _
 from ..pre_query import insert_pre_query, remove_pre_query
+from ..progress import progress_func_wrapper
 from .groups import find_active_userbot_client, start_stream
 
-
-async def _progress_func_wrapper(reply: Message, current: int, total: int, upload: bool = False) -> None:
-    from ... import bot_config
-
-    ignore_progress = (
-        bot_config.BOT_IGNORE_PROGRESS
-        if hasattr(bot_config, "BOT_IGNORE_PROGRESS")
-        else False
-    )
-
-    if ignore_progress:
-        return
-
-    percent = int((current / total) * 100)
-    last_percent = globals().get(f"last_percent_{reply.chat.id}_{reply.id}", -1)
-    last_epoch: int = globals().get(f"last_percent_epoch_{reply.chat.id}_{reply.id}", 0)
-    current_epoch = int(time())
-    if percent != last_percent and (current_epoch - last_epoch) > 3:
-        globals()[f"last_percent_{reply.chat.id}_{reply.id}"] = percent
-        globals()[f"last_percent_epoch_{reply.chat.id}_{reply.id}"] = current_epoch
-
-        try:
-            await reply.edit(_.translate_chat('mvUploading' if upload else 'mvDownloading', args=[percent], cid=reply.chat.id))
-        except BaseException:
-            pass
 
 def clean_percent_record(chat_id: int, msg_id: int):
     key1 = f"last_percent_{chat_id}_{msg_id}"
@@ -268,7 +243,7 @@ async def download_tg_media(
     userbot: Optional[Client] = None,
 ) -> Optional[str]:
     async def progress_func(current: int, total: int):
-        return await _progress_func_wrapper(reply, current, total)
+        return await progress_func_wrapper(reply, current, total)
 
     if use_userbot:
         if not userbot:
@@ -316,7 +291,7 @@ async def upload_tg_media(
     userbot: Optional[Client] = None,
 ):
     async def progress_func(current: int, total: int):
-        return await _progress_func_wrapper(reply, current, total, True)
+        return await progress_func_wrapper(reply, current, total, True)
 
     if use_userbot:
         if not userbot:
