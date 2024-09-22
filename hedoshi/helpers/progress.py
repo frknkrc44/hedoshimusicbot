@@ -8,7 +8,7 @@ from ..translations import translator as _
 async def progress_func_wrapper(
     reply: Message, current: int, total: int, upload: bool = False
 ) -> None:
-    from ... import bot_config
+    from .. import bot_config
 
     ignore_progress = (
         bot_config.BOT_IGNORE_PROGRESS
