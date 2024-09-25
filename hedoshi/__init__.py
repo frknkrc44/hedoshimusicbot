@@ -44,7 +44,7 @@ class MyNullHandler(NullHandler):
 
             if not iscoroutinefunction(self.on_trigger):
                 if loop:
-                    loop.run_in_executor(self.on_trigger)
+                    loop.run_in_executor(None, self.on_trigger)
                 else:
                     self.on_trigger()
 
