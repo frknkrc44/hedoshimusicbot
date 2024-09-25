@@ -7,7 +7,7 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from asyncio import get_event_loop, run
+from asyncio import get_event_loop, iscoroutinefunction, run
 from asyncio import sleep as async_sleep
 from logging import (FATAL, INFO, LogRecord, NullHandler, basicConfig, error,
                      getLogger, info)
@@ -41,10 +41,21 @@ class MyNullHandler(NullHandler):
     def handle(self, record: LogRecord) -> bool:
         if self.signal_text in record.getMessage():
             loop = get_event_loop()
+
+            if not iscoroutinefunction(self.on_trigger):
+                if loop:
+                    loop.run_in_executor(self.on_trigger)
+                else:
+                    self.on_trigger()
+
+                return True
+
             if loop:
                 loop.run_until_complete(self.on_trigger())
             else:
                 run(self.on_trigger())
+
+            return True
 
         return super().handle(record)
 
@@ -87,10 +98,6 @@ def reconnect(client: Client):
     return fn
 
 
-async def force_quit():
-    quit()
-
-
 bot = Client(
     name,
     api_id=bot_config.API_ID,  # type: ignore
@@ -108,7 +115,7 @@ getLogger("pyrogram.connection.transport.tcp.tcp").addHandler(
 getLogger("root").addHandler(
     MyNullHandler(
         signal_text="Stop signal received",
-        on_trigger=force_quit,
+        on_trigger=quit,
     )
 )
 
