@@ -8,7 +8,6 @@
 #
 
 from asyncio import iscoroutinefunction
-from json.decoder import JSONDecodeError
 from os import getcwd, remove, sep
 from os.path import exists, getsize
 from random import shuffle
@@ -78,11 +77,7 @@ async def search_invidious(query: str) -> str:
         try:
             async with AsyncClient(timeout=10) as http:
                 req = await http.get(search_url)
-                try:
-                    out_json = req.json()
-                except JSONDecodeError:
-                    # suppress the JSON decode error
-                    continue
+                out_json = req.json()
 
                 if type(out_json) is list:
                     for item in out_json:
