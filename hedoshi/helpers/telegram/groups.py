@@ -147,7 +147,11 @@ async def add_userbot(message: Message) -> bool:
         try:
             pyro = get_client(calls)
 
-            assert len(userbots) < 2 or len(await calls.calls) < 10
+            assert (
+                len(userbots) < 2
+                or len(await calls.calls) < 12
+                or (userbots.index(calls) + 1) == len(userbots)
+            )
 
             chat = await pyro.join_chat(invite_link)
             return chat
