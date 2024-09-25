@@ -138,11 +138,7 @@ async def __youtube2invidious(url: str, audio: bool, max_video_quality: int):
             try:
                 async with AsyncClient(timeout=5) as http:
                     req = await http.get(videos_url)
-                    try:
-                        out_json = req.json()
-                    except JSONDecodeError:
-                        # suppress the JSON decode error
-                        continue
+                    out_json = req.json()
 
                     if "error" not in out_json:
                         if audio:
