@@ -8,7 +8,7 @@
 #
 
 from subprocess import PIPE, run
-from typing import Optional
+from typing import List, Optional
 
 from pytgcalls.types.raw import AudioParameters, VideoParameters
 
@@ -64,8 +64,8 @@ def get_audio_params(path: str) -> AudioParameters:
 
     out_split = res.stdout.decode().split("x")
     return AudioParameters(
-        bitrate=__parse_int(out_split[0], 44100),
-        channels=__parse_int(out_split[1], 2),
+        bitrate=__parse_int(__get_item(out_split, 0), 44100),
+        channels=__parse_int(__get_item(out_split, 1), 2),
     )
 
 
@@ -103,10 +103,18 @@ def get_resolution(path: str) -> VideoParameters:
         rate_parsed = 20
 
     return VideoParameters(
-        width=__parse_int(out_split[0]),
-        height=__parse_int(out_split[1]),
+        width=__parse_int(__get_item(out_split, 0), 960),
+        height=__parse_int(__get_item(out_split, 1), 540),
         frame_rate=rate_parsed,
     )
+
+
+def __get_item(items: List, idx: int):
+    if not items or len(items) <= idx:
+        return None
+
+    return items[idx]
+
 
 def __parse_int(item: str, default: int = 0):
     try:
