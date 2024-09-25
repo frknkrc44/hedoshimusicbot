@@ -66,12 +66,14 @@ async def join_or_change_stream(
 
     if action == 0:
         seconds = get_duration(stream._media_path)
+        """
         if not seconds:
             if 'msg' not in locals():
                 await reply_message(message, tr("astDurationFail"))
             else:
                 await locals()['msg'].edit(tr('astDurationFail'))
             return None
+        """
 
         item = QueryItem(
             stream,
