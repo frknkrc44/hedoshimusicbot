@@ -334,6 +334,7 @@ async def __async_file_download(
                 "Sec-Fetch-Site": "same-site",
                 "Sec-GPC": "1",
                 "Priority": "u=1",
+                "Referer": "https://www.youtube.com/",
             }
 
             async with AsyncClient(
