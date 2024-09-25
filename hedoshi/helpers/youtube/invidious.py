@@ -66,6 +66,11 @@ async def search_invidious(query: str) -> str:
         mirror = await __get_valid_invidious_mirror(tried_instances)
         tried_instances.append(mirror)
 
+        if not mirror:
+            tried_instances.clear()
+            try_count = try_count + 1
+            continue
+
         print("Selected invidious instance:", mirror)
 
         search_url = f"{mirror}/api/v1/search?q={query}"
