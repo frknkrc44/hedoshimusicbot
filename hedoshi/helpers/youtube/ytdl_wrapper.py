@@ -249,6 +249,8 @@ async def download_media(
                         "http": proxy,
                     }
                     info(f"Set a random proxy {ytdl.proxies}")
+                else:
+                    ytdl.proxies.clear()
 
                 assert not await get_event_loop().run_in_executor(
                     None,

@@ -143,10 +143,15 @@ async def add_userbot(message: Message) -> bool:
 
     for calls in userbots:
         try:
-            chat = await get_client(calls).join_chat(invite_link)
+            pyro = get_client(calls)
+
+            call_dict = await calls.calls
+            assert len(call_dict) < 10
+
+            chat = await pyro.join_chat(invite_link)
             return chat
         except BaseException:
-            return False
+            continue
 
     return False
 

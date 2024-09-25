@@ -104,7 +104,10 @@ async def __youtube2invidious(url: str, audio: bool, max_video_quality: int):
         tried_instances = []
         while try_count < 10:
             mirror = await __get_valid_invidious_mirror(tried_instances)
+
             if not mirror:
+                tried_instances.clear()
+                try_count = try_count + 1
                 continue
 
             tried_instances.append(mirror)
