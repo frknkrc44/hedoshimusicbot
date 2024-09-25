@@ -220,6 +220,11 @@ async def download_media(
         "outtmpl": f'{getcwd()}{sep}downloads{sep}%(id)s-{"a" if audio else "v"}.%(ext)s',
         "cachedir": f"{getcwd()}{sep}downloads",
         "progress_hooks": [ytdl_progress_hook],
+        "geo_bypass": True,
+        "nocheckcertificate": True,
+        "quiet": True,
+        "no_warnings": True,
+        "prefer_ffmpeg": True,
     }
 
     if ytdl_cookie_file and exists(ytdl_cookie_file):
