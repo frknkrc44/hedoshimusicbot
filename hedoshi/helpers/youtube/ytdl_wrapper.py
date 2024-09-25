@@ -173,6 +173,12 @@ async def download_media(
         else False
     )
 
+    enable_oauth2 = (
+        bot_config.YTDL_ENABLE_OAUTH2
+        if hasattr(bot_config, "YTDL_ENABLE_OAUTH2")
+        else False
+    )
+
     use_proxy = (
         bot_config.BOT_USE_PROXY if hasattr(bot_config, "BOT_USE_PROXY") else False
     )
@@ -222,12 +228,14 @@ async def download_media(
         "progress_hooks": [ytdl_progress_hook],
         "geo_bypass": True,
         "nocheckcertificate": True,
-        "quiet": True,
-        "no_warnings": True,
         "prefer_ffmpeg": True,
     }
 
-    if ytdl_cookie_file and exists(ytdl_cookie_file):
+    if is_valid_invidious_match(url) and enable_oauth2:
+        opts["username"] = "oauth2"
+        opts["password"] = ""
+
+    if not enable_oauth2 and ytdl_cookie_file and exists(ytdl_cookie_file):
         opts["cookiefile"] = ytdl_cookie_file
 
     if audio:
