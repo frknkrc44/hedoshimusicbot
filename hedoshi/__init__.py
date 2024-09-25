@@ -7,7 +7,7 @@
 # All rights reserved. See COPYING, AUTHORS.
 #
 
-from asyncio import run
+from asyncio import get_event_loop, run
 from asyncio import sleep as async_sleep
 from logging import (FATAL, INFO, LogRecord, NullHandler, basicConfig, error,
                      getLogger, info)
@@ -40,7 +40,11 @@ class MyNullHandler(NullHandler):
 
     def handle(self, record: LogRecord) -> bool:
         if self.signal_text in record.getMessage():
-            run(self.on_trigger())
+            loop = get_event_loop()
+            if loop:
+                loop.run_until_complete(self.on_trigger())
+            else:
+                run(self.on_trigger())
 
         return super().handle(record)
 
