@@ -214,20 +214,35 @@ def get_downloaded_file_name(
     escaped_name: Optional[str] = None
 
     match source.media:
-        case MessageMediaType.AUDIO:
+        case MessageMediaType.VOICE:
+            file_id = source.voice.file_unique_id or source.voice.file_id
             escaped_name = escape_file_name(
-                source.audio.file_name,
-                source.audio.file_unique_id or source.audio.file_id,
+                f"{file_id}.opus",
+                file_id,
+            )
+        case MessageMediaType.VIDEO_NOTE:
+            file_id = source.video_note.file_unique_id or source.video_note.file_id
+            escaped_name = escape_file_name(
+                f"{file_id}.mp4",
+                file_id,
+            )
+        case MessageMediaType.AUDIO:
+            file_id = source.audio.file_unique_id or source.audio.file_id
+            escaped_name = escape_file_name(
+                source.audio.file_name or f"{file_id}.opus",
+                file_id,
             )
         case MessageMediaType.DOCUMENT:
+            file_id = source.document.file_unique_id or source.document.file_id
             escaped_name = escape_file_name(
-                source.document.file_name,
-                source.document.file_unique_id or source.document.file_id,
+                source.document.file_name or f"{file_id}.bin",
+                file_id,
             )
         case MessageMediaType.VIDEO:
+            file_id = source.video.file_unique_id or source.video.file_id
             escaped_name = escape_file_name(
-                source.video.file_name,
-                source.video.file_unique_id or source.video.file_id,
+                source.video.file_name or f"{file_id}.mp4",
+                file_id,
             )
 
     if exists(escaped_name) or force_return:
