@@ -35,7 +35,7 @@ def get_duration(path: str) -> Optional[int]:
     if res.returncode > 0:
         print(res.stderr.decode())
 
-    return int(float(res.stdout.decode()))
+    return __parse_fint(res.stdout.decode(), 0)
 
 
 def get_audio_params(path: str) -> AudioParameters:
@@ -116,6 +116,21 @@ def __get_item(items: List, idx: int):
     return items[idx]
 
 
+def __parse_fint(item: str, default: int = 0):
+    try:
+        item = item.strip()
+
+        if not len(item):
+            return default
+
+        if "\n" in item:
+            item = item[item.find("\n") + 1 :]
+
+        return int(float(item))
+    except BaseException:
+        return default
+
+
 def __parse_int(item: str, default: int = 0):
     try:
         item = item.strip()
@@ -124,7 +139,7 @@ def __parse_int(item: str, default: int = 0):
             return default
 
         if "\n" in item:
-            return int(item[item.find("\n") + 1 :])
+            item = item[item.find("\n") + 1 :]
 
         return int(item)
     except BaseException:
