@@ -40,20 +40,20 @@ class MyNullHandler(NullHandler):
 
     def handle(self, record: LogRecord) -> bool:
         if self.signal_text in record.getMessage():
-            loop = get_event_loop()
+            try:
+                loop = get_event_loop()
 
-            if not iscoroutinefunction(self.on_trigger):
-                if loop:
-                    loop.run_in_executor(None, self.on_trigger)
+                if not iscoroutinefunction(self.on_trigger):
+                    if loop:
+                        loop.run_in_executor(None, self.on_trigger)
+                    else:
+                        self.on_trigger()
+                elif loop:
+                    loop.run_until_complete(self.on_trigger())
                 else:
-                    self.on_trigger()
-
-                return True
-
-            if loop:
-                loop.run_until_complete(self.on_trigger())
-            else:
-                run(self.on_trigger())
+                    run(self.on_trigger())
+            except BaseException:
+                pass
 
             return True
 

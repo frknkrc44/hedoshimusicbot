@@ -253,6 +253,8 @@ async def download_media(
         try_count = 0
         while try_count < 4:
             try:
+                ytdl.proxies.clear()
+
                 if use_proxy and try_count < 3:
                     ytdl.cookiejar.clear()
 
@@ -262,8 +264,6 @@ async def download_media(
                         "http": proxy,
                     }
                     info(f"Set a random proxy {ytdl.proxies}")
-                else:
-                    ytdl.proxies.clear()
 
                 assert not await get_event_loop().run_in_executor(
                     None,
